@@ -5,8 +5,30 @@ import { Shoe } from '@/types/shoe';
 import ShoeCard from './ShoeCard';
 import ShoeModal from './ShoeModal';
 
+// Priority brands - always shown first in this order
+const PRIORITY_BRANDS = ['Nike', 'Adidas', 'Puma', 'Asics'];
+
 interface ShoeGridProps {
   shoes: Shoe[];
+}
+
+// Helper function to sort brands with priority
+function sortBrandsWithPriority(brands: string[]): string[] {
+  return brands.sort((a, b) => {
+    const aIndex = PRIORITY_BRANDS.indexOf(a);
+    const bIndex = PRIORITY_BRANDS.indexOf(b);
+
+    // Both are priority brands - sort by priority order
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    // Only a is priority brand - a comes first
+    if (aIndex !== -1) return -1;
+    // Only b is priority brand - b comes first
+    if (bIndex !== -1) return 1;
+    // Neither is priority - sort alphabetically
+    return a.localeCompare(b);
+  });
 }
 
 export default function ShoeGrid({ shoes }: ShoeGridProps) {
@@ -15,16 +37,40 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'newest' | 'expiring'>('newest');
 
-  // Get unique brands with count
+  // Get 4 newest shoes (by certification start date)
+  const newestShoes = useMemo(() => {
+    return [...shoes]
+      .sort((a, b) => {
+        const dateA = a.certificationStartDateExp ? new Date(a.certificationStartDateExp).getTime() : 0;
+        const dateB = b.certificationStartDateExp ? new Date(b.certificationStartDateExp).getTime() : 0;
+        return dateB - dateA;
+      })
+      .slice(0, 4);
+  }, [shoes]);
+
+  const newestShoeIds = useMemo(() => new Set(newestShoes.map(s => s.productApplicationuuid)), [newestShoes]);
+
+  // Get unique brands with count - sorted with priority brands first
   const brandsWithCount = useMemo(() => {
     const brandMap = new Map<string, number>();
     shoes.forEach((shoe) => {
       const count = brandMap.get(shoe.manufacturerName) || 0;
       brandMap.set(shoe.manufacturerName, count + 1);
     });
-    return Array.from(brandMap.entries())
-      .sort((a, b) => b[1] - a[1]) // Sort by count descending
-      .map(([name, count]) => ({ name, count }));
+
+    const entries = Array.from(brandMap.entries());
+    // Sort: priority brands first, then by count
+    entries.sort((a, b) => {
+      const aIndex = PRIORITY_BRANDS.indexOf(a[0]);
+      const bIndex = PRIORITY_BRANDS.indexOf(b[0]);
+
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      return b[1] - a[1]; // Sort by count descending
+    });
+
+    return entries.map(([name, count]) => ({ name, count }));
   }, [shoes]);
 
   // Filter and sort shoes
@@ -63,10 +109,20 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     return grouped;
   }, [filteredShoes]);
 
-  const sortedBrands = Object.keys(groupedShoes).sort();
+  // Sort brands with priority (Nike, Adidas, Puma, Asics first)
+  const sortedBrands = sortBrandsWithPriority(Object.keys(groupedShoes));
 
-  // Popular brands (top 5)
-  const popularBrands = brandsWithCount.slice(0, 5);
+  // Quick filter brands - priority brands first, then top by count
+  const quickFilterBrands = useMemo(() => {
+    const priorityInData = PRIORITY_BRANDS.filter(b =>
+      brandsWithCount.some(({ name }) => name === b)
+    );
+    const others = brandsWithCount
+      .filter(({ name }) => !PRIORITY_BRANDS.includes(name))
+      .slice(0, 5 - priorityInData.length);
+
+    return [...priorityInData.map(name => ({ name, count: brandsWithCount.find(b => b.name === name)?.count || 0 })), ...others];
+  }, [brandsWithCount]);
 
   return (
     <>
@@ -135,10 +191,10 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             </div>
           </div>
 
-          {/* Quick Filters - Popular Brands */}
+          {/* Quick Filters - Priority Brands */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <span className="text-xs text-gray-500 shrink-0">인기:</span>
-            {popularBrands.map(({ name }) => (
+            <span className="text-xs text-gray-500 shrink-0">브랜드:</span>
+            {quickFilterBrands.map(({ name }) => (
               <button
                 key={name}
                 onClick={() => setSelectedBrand(selectedBrand === name ? 'all' : name)}
@@ -177,6 +233,32 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
           )}
         </p>
       </div>
+
+      {/* Newest Section - Only show when no filters applied */}
+      {selectedBrand === 'all' && searchQuery === '' && (
+        <section className="mb-12">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-semibold">NEW</span>
+              <h2 className="text-xl font-bold text-white">Newest</h2>
+            </div>
+            <span className="px-2.5 py-0.5 rounded-full bg-gray-800 text-gray-400 text-sm">
+              {newestShoes.length}
+            </span>
+            <div className="flex-1 h-px bg-gray-800" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {newestShoes.map((shoe) => (
+              <ShoeCard
+                key={`newest-${shoe.productApplicationuuid}`}
+                shoe={shoe}
+                onClick={() => setSelectedShoe(shoe)}
+                isNew
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Shoe Grid grouped by brand */}
       {sortedBrands.map((brand) => (

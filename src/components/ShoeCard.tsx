@@ -7,6 +7,7 @@ import { useState } from 'react';
 interface ShoeCardProps {
   shoe: Shoe;
   onClick: () => void;
+  isNew?: boolean;
 }
 
 const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/OpenDocument/';
@@ -25,7 +26,7 @@ function formatDateShort(dateStr: string | undefined): string {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function ShoeCard({ shoe, onClick }: ShoeCardProps) {
+export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
@@ -101,10 +102,15 @@ export default function ShoeCard({ shoe, onClick }: ShoeCardProps) {
         </div>
 
         {/* Brand Badge - Top Left */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           <span className="bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-medium">
             {shoe.manufacturerName}
           </span>
+          {isNew && (
+            <span className="bg-green-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-lg animate-pulse">
+              NEW
+            </span>
+          )}
         </div>
       </div>
 
