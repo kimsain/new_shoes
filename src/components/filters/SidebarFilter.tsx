@@ -44,17 +44,7 @@ export default function SidebarFilter({
   clearAllFilters,
 }: SidebarFilterProps) {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
-          Filters
-        </h3>
-        {activeFilterCount > 0 && (
-          <span className="text-xs text-indigo-400">{activeFilterCount} active</span>
-        )}
-      </div>
-
+    <div className="space-y-5">
       {/* Status - Segment Control */}
       <FilterSection title="Status">
         <div className="segment-control">

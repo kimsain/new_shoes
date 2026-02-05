@@ -109,14 +109,14 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   return (
     <>
       {/* Desktop Layout (lg+): Sidebar + Main */}
-      <div className="hidden lg:flex gap-8">
+      <div className="hidden lg:flex gap-6">
         {/* Sidebar */}
-        <aside className="w-64 flex-shrink-0">
-          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] p-5 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-white">필터</h3>
+        <aside className="w-60 flex-shrink-0">
+          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] p-4 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Filters</h3>
               {filters.activeFilterCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 text-xs font-medium">
                   {filters.activeFilterCount}
                 </span>
               )}
@@ -128,7 +128,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         {/* Main Content */}
         <main className="flex-1 min-w-0">
           {/* Search Bar */}
-          <div className="sticky top-16 z-40 -mx-4 px-4 py-3 glass mb-6">
+          <div className="sticky top-16 z-40 -mx-4 px-4 py-2 glass mb-4">
             <SearchBar
               searchInput={search.searchInput}
               setSearchInput={search.setSearchInput}
@@ -155,7 +155,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       {/* Mobile/Tablet Layout (< lg) */}
       <div className="lg:hidden">
         {/* Sticky Search Bar */}
-        <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 glass mb-6">
+        <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 glass mb-4">
           <div className="flex gap-2">
             <div className="flex-1">
               <SearchBar
@@ -312,7 +312,7 @@ function MainContent({
 
       {/* Newest Section */}
       {!hasActiveFilters && (
-        <section className="mb-10">
+        <section className="mb-8">
           <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
             {newestShoes.map((shoe) => (
@@ -329,8 +329,8 @@ function MainContent({
 
       {/* Brand Sections */}
       {sortedBrands.map((brand, idx) => (
-        <section key={brand} className="mb-10">
-          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-10" />}
+        <section key={brand} className="mb-8">
+          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-6" />}
           <SectionHeader title={brand} count={groupedShoes[brand].length} />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
             {groupedShoes[brand].map((shoe) => (

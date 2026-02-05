@@ -93,28 +93,35 @@ body {
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(120px);
   pointer-events: none;
 }
 
 .glow-orb-1 {
-  width: 600px;
-  height: 600px;
-  background: rgba(99, 102, 241, 0.15);
+  width: 700px;
+  height: 700px;
+  background: rgba(99, 102, 241, 0.2);
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
   animation: orb-float 20s ease-in-out infinite;
 }
 
 .glow-orb-2 {
-  width: 400px;
-  height: 400px;
-  background: rgba(139, 92, 246, 0.12);
+  width: 500px;
+  height: 500px;
+  background: rgba(139, 92, 246, 0.15);
+  top: 50px;
+  right: 5%;
   animation: orb-float 20s ease-in-out infinite -7s;
 }
 
 .glow-orb-3 {
-  width: 300px;
-  height: 300px;
-  background: rgba(6, 182, 212, 0.08);
+  width: 400px;
+  height: 400px;
+  background: rgba(6, 182, 212, 0.12);
+  bottom: -100px;
+  left: 10%;
   animation: orb-float 20s ease-in-out infinite -14s;
 }
 
@@ -527,14 +534,21 @@ body {
    ============================================ */
 
 .toggle-chip {
-  padding: 8px 16px;
-  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
   color: #a1a1aa;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s ease;
   cursor: pointer;
+  text-align: left;
 }
 
 .toggle-chip:hover {
@@ -546,7 +560,6 @@ body {
   background: rgba(99, 102, 241, 0.15);
   border-color: rgba(99, 102, 241, 0.5);
   color: #a5b4fc;
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.4);
 }
 
 /* ============================================
@@ -556,16 +569,16 @@ body {
 .segment-control {
   display: flex;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
 }
 
 .segment-item {
   flex: 1;
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: #71717a;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -590,9 +603,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: #71717a;
   transition: all 0.2s ease;
   cursor: pointer;

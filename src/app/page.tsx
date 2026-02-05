@@ -15,7 +15,7 @@ export default async function Home() {
       <HeroSection stats={stats} />
 
       {/* Main Content */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-32">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-16">
         {shoes.length === 0 ? (
           <EmptyDataState />
         ) : (
@@ -32,7 +32,7 @@ export default async function Home() {
 // Hero Section Component
 function HeroSection({ stats }: { stats: { total: number; brandCount: number; disciplineCount: number } }) {
   return (
-    <section className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 px-4 overflow-hidden">
+    <section className="relative pt-24 pb-16 lg:pt-28 lg:pb-20 px-4 overflow-hidden">
       {/* Glow Orbs Background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Orb 1 - Indigo (largest) */}
@@ -55,24 +55,24 @@ function HeroSection({ stats }: { stats: { total: number; brandCount: number; di
 
       <div className="relative max-w-5xl mx-auto text-center">
         {/* Badge */}
-        <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/30 mb-8 backdrop-blur-sm">
-          <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-indigo-300">
+        <div className="hero-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 mb-5 backdrop-blur-sm">
+          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-indigo-300">
             ✦ Development Shoes
           </span>
         </div>
 
         {/* Title - Two lines */}
-        <h1 className="hero-title mb-6">
-          <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white tracking-[-0.04em] leading-[1.1]">
+        <h1 className="hero-title mb-4">
+          <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-[-0.04em] leading-[1.1]">
             The Future of
           </span>
-          <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-[-0.04em] leading-[1.1] bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+          <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.04em] leading-[1.1] bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
             Running Shoes
           </span>
         </h1>
 
         {/* Description */}
-        <p className="hero-description text-base sm:text-lg text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="hero-description text-sm sm:text-base text-zinc-400 mb-6 max-w-xl mx-auto leading-relaxed">
           World Athletics 승인 대기 중인 프로토타입을 실시간으로 추적하세요
         </p>
 
@@ -87,7 +87,7 @@ function HeroSection({ stats }: { stats: { total: number; brandCount: number; di
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent" />
     </section>
   );
 }
@@ -115,19 +115,19 @@ function EmptyDataState() {
 // Footer Component
 function Footer({ lastUpdated, stats }: { lastUpdated: string; stats: { total: number; brandCount: number } }) {
   return (
-    <footer className="relative pt-16 pb-12 px-4">
+    <footer className="relative pt-10 pb-8 px-4">
       {/* Glow gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
 
       <div className="max-w-[1400px] mx-auto">
         {/* Brand */}
-        <div className="text-center mb-8">
-          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">
+        <div className="text-center mb-6">
+          <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-3">
             Development Shoes
           </p>
 
           {/* Status */}
-          <div className="inline-flex items-center gap-2 text-sm text-zinc-500 mb-6">
+          <div className="inline-flex items-center gap-2 text-xs text-zinc-500 mb-4">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
               Synced
@@ -140,7 +140,7 @@ function Footer({ lastUpdated, stats }: { lastUpdated: string; stats: { total: n
         </div>
 
         {/* Links */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
           <a
             href="https://github.com/kimsain/new_shoes"
             target="_blank"
