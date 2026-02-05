@@ -2,34 +2,51 @@
 
 import { StatusFilter, CountedItem } from '@/types/filters';
 import { getDisplayName } from '@/utils/displayNames';
+import { FILTER, TEXT, BG, BUTTON, BORDER } from '@/styles/tokens';
 
 interface SidebarFilterProps {
-  // Status
   statusFilter: StatusFilter;
   setStatusFilter: (status: StatusFilter) => void;
-  // Brands
   brandsWithCount: CountedItem[];
   selectedBrands: Set<string>;
   toggleBrand: (brand: string) => void;
-  // Disciplines
   disciplinesWithCount: CountedItem[];
   selectedDisciplines: Set<string>;
   toggleDiscipline: (discipline: string) => void;
-  // Types
   typesWithCount: CountedItem[];
   selectedTypes: Set<string>;
   toggleType: (type: string) => void;
-  // Actions
   activeFilterCount: number;
   clearAllFilters: () => void;
 }
 
+// 상태 필터 옵션 (Tailwind JIT를 위해 전체 클래스 명시)
 const STATUS_OPTIONS = [
-  { value: 'all', label: '전체', color: 'zinc' },
-  { value: 'valid', label: '유효', color: 'emerald' },
-  { value: 'expiring', label: '만료 임박', color: 'amber' },
-  { value: 'expired', label: '만료됨', color: 'red' },
-] as const;
+  {
+    value: 'all' as const,
+    label: '전체',
+    active: { bg: 'bg-zinc-700', text: 'text-white', dot: 'bg-white' },
+    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
+  },
+  {
+    value: 'valid' as const,
+    label: '유효',
+    active: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
+  },
+  {
+    value: 'expiring' as const,
+    label: '만료 임박',
+    active: { bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
+    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
+  },
+  {
+    value: 'expired' as const,
+    label: '만료됨',
+    active: { bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
+    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
+  },
+];
 
 export default function SidebarFilter({
   statusFilter,
@@ -51,29 +68,31 @@ export default function SidebarFilter({
       {/* Status */}
       <FilterGroup title="승인 상태">
         <div className="space-y-1">
-          {STATUS_OPTIONS.map(({ value, label, color }) => (
-            <button
-              key={value}
-              onClick={() => setStatusFilter(value)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-                statusFilter === value
-                  ? `bg-${color}-500/15 text-${color}-400`
-                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  statusFilter === value ? `bg-${color}-400` : 'bg-zinc-600'
+          {STATUS_OPTIONS.map(({ value, label, active, inactive }) => {
+            const isActive = statusFilter === value;
+            const colors = isActive ? active : inactive;
+            return (
+              <button
+                key={value}
+                onClick={() => setStatusFilter(value)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                  isActive ? `${colors.bg} ${colors.text}` : `${colors.text} hover:bg-white/5 hover:text-white`
                 }`}
-              />
-              {label}
-            </button>
-          ))}
+              >
+                <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </FilterGroup>
 
       {/* Brands */}
-      <FilterGroup title="브랜드" selectedCount={selectedBrands.size} selectedColor="emerald">
+      <FilterGroup
+        title="브랜드"
+        selectedCount={selectedBrands.size}
+        selectedColor="text-emerald-400"
+      >
         <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1 scrollbar-thin">
           {brandsWithCount.map(({ name, count }) => (
             <CheckboxItem
@@ -82,14 +101,18 @@ export default function SidebarFilter({
               count={count}
               checked={selectedBrands.has(name)}
               onClick={() => toggleBrand(name)}
-              color="emerald"
+              colors={FILTER.brand}
             />
           ))}
         </div>
       </FilterGroup>
 
       {/* Disciplines */}
-      <FilterGroup title="종목" selectedCount={selectedDisciplines.size} selectedColor="sky">
+      <FilterGroup
+        title="종목"
+        selectedCount={selectedDisciplines.size}
+        selectedColor="text-sky-400"
+      >
         <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
           {disciplinesWithCount.map(({ name, count }) => (
             <CheckboxItem
@@ -98,14 +121,18 @@ export default function SidebarFilter({
               count={count}
               checked={selectedDisciplines.has(name)}
               onClick={() => toggleDiscipline(name)}
-              color="sky"
+              colors={FILTER.discipline}
             />
           ))}
         </div>
       </FilterGroup>
 
       {/* Types */}
-      <FilterGroup title="신발 유형" selectedCount={selectedTypes.size} selectedColor="violet">
+      <FilterGroup
+        title="신발 유형"
+        selectedCount={selectedTypes.size}
+        selectedColor="text-violet-400"
+      >
         <div className="space-y-1">
           {typesWithCount.map(({ name, count }) => (
             <CheckboxItem
@@ -114,7 +141,7 @@ export default function SidebarFilter({
               count={count}
               checked={selectedTypes.has(name)}
               onClick={() => toggleType(name)}
-              color="violet"
+              colors={FILTER.type}
             />
           ))}
         </div>
@@ -124,7 +151,7 @@ export default function SidebarFilter({
       {activeFilterCount > 0 && (
         <button
           onClick={clearAllFilters}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-all"
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm ${BUTTON.danger.text} ${BUTTON.danger.bgHover} border ${BUTTON.danger.border} transition-all`}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -144,15 +171,15 @@ function FilterGroup({
 }: {
   title: string;
   selectedCount?: number;
-  selectedColor?: 'emerald' | 'sky' | 'violet';
+  selectedColor?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{title}</h4>
+        <h4 className={`text-xs font-semibold ${TEXT.tertiary} uppercase tracking-wider`}>{title}</h4>
         {selectedCount !== undefined && selectedCount > 0 && (
-          <span className={`text-xs text-${selectedColor}-400`}>{selectedCount}개 선택</span>
+          <span className={`text-xs ${selectedColor}`}>{selectedCount}개 선택</span>
         )}
       </div>
       {children}
@@ -160,33 +187,36 @@ function FilterGroup({
   );
 }
 
+interface FilterColors {
+  active: { bg: string; text: string; checkbox: string };
+  inactive: { bg: string; text: string; checkbox: string };
+}
+
 function CheckboxItem({
   label,
   count,
   checked,
   onClick,
-  color,
+  colors,
 }: {
   label: string;
   count: number;
   checked: boolean;
   onClick: () => void;
-  color: 'emerald' | 'sky' | 'violet';
+  colors: FilterColors;
 }) {
+  const style = checked ? colors.active : colors.inactive;
+
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
-        checked
-          ? `bg-${color}-500/15 text-${color}-400`
-          : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${style.bg} ${style.text} ${
+        !checked ? 'hover:bg-white/5 hover:text-white' : ''
       }`}
     >
       <span className="flex items-center gap-2 min-w-0">
         <span
-          className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${
-            checked ? `bg-${color}-500 border-${color}-500` : 'border-zinc-600'
-          }`}
+          className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${style.checkbox}`}
         >
           {checked && (
             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +226,7 @@ function CheckboxItem({
         </span>
         <span className="break-words text-left">{label}</span>
       </span>
-      <span className="text-xs text-zinc-600 flex-shrink-0 ml-2">{count}</span>
+      <span className={`text-xs ${TEXT.disabled} flex-shrink-0 ml-2`}>{count}</span>
     </button>
   );
 }

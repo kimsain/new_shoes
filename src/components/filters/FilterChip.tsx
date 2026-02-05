@@ -1,6 +1,7 @@
 'use client';
 
 import { FilterColor } from '@/types/filters';
+import { BG, TEXT } from '@/styles/tokens';
 
 interface FilterChipProps {
   label: string;
@@ -9,23 +10,42 @@ interface FilterChipProps {
   color: FilterColor;
 }
 
-const COLOR_STYLES: Record<FilterColor, string> = {
-  emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  sky: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
-  violet: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
-  amber: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  red: 'bg-red-500/20 text-red-400 border-red-500/30',
-  zinc: 'bg-zinc-700 text-white border-zinc-600',
+// Tailwind JIT를 위해 전체 클래스명 명시
+const COLOR_STYLES: Record<FilterColor, { active: string; inactive: string }> = {
+  emerald: {
+    active: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
+  sky: {
+    active: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
+  violet: {
+    active: 'bg-violet-500/15 text-violet-400 border-violet-500/30',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
+  amber: {
+    active: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
+  red: {
+    active: 'bg-red-500/15 text-red-400 border-red-500/30',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
+  zinc: {
+    active: 'bg-zinc-700 text-white border-zinc-600',
+    inactive: `${BG.interactive.default} ${TEXT.tertiary} border-transparent hover:bg-white/[0.06] hover:text-white`,
+  },
 };
 
 export default function FilterChip({ label, active, onClick, color }: FilterChipProps) {
+  const styles = COLOR_STYLES[color];
+
   return (
     <button
       onClick={onClick}
       className={`px-3 py-2 min-h-[40px] rounded-xl text-sm font-medium border transition-all duration-200 btn-press ${
-        active
-          ? COLOR_STYLES[color]
-          : 'bg-white/[0.03] text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-white'
+        active ? styles.active : styles.inactive
       }`}
     >
       {label}

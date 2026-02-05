@@ -1,6 +1,7 @@
 'use client';
 
 import { SortOption } from '@/types/filters';
+import { BG, BORDER, TEXT, ACCENT } from '@/styles/tokens';
 
 interface SearchBarProps {
   searchInput: string;
@@ -29,11 +30,11 @@ export default function SearchBar({
       <div className="relative flex-1">
         {isSearching ? (
           <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4">
-            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+            <div className={`w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin`} />
           </div>
         ) : (
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+            className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${TEXT.muted}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -51,12 +52,12 @@ export default function SearchBar({
           placeholder={placeholder}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className={`w-full ${compact ? 'pl-9 pr-9' : 'pl-10 pr-10'} py-2.5 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300 text-sm`}
+          className={`w-full ${compact ? 'pl-9 pr-9' : 'pl-10 pr-10'} py-2.5 rounded-xl ${BG.interactive.default} ${TEXT.primary} placeholder-zinc-500 border ${BORDER.subtle} focus:outline-none ${BORDER.focus} focus:bg-white/[0.05] transition-all duration-300 text-sm`}
         />
         {searchInput && (
           <button
             onClick={clearSearch}
-            className={`absolute ${compact ? 'right-2 p-1' : 'right-2 p-1.5'} top-1/2 -translate-y-1/2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-all`}
+            className={`absolute ${compact ? 'right-2 p-1' : 'right-2 p-1.5'} top-1/2 -translate-y-1/2 rounded-lg ${TEXT.tertiary} hover:text-white hover:bg-white/10 transition-all`}
             aria-label="검색어 지우기"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +71,7 @@ export default function SearchBar({
       <select
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value as SortOption)}
-        className={`${compact ? 'px-3' : 'px-4'} py-2.5 rounded-xl bg-white/[0.03] text-white border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 text-sm cursor-pointer`}
+        className={`${compact ? 'px-3' : 'px-4'} py-2.5 rounded-xl ${BG.interactive.default} ${TEXT.primary} border ${BORDER.subtle} focus:outline-none ${BORDER.focus} transition-all duration-300 text-sm cursor-pointer`}
       >
         <option value="newest">최신순</option>
         <option value="expiring">{compact ? '만료임박' : '만료임박순'}</option>

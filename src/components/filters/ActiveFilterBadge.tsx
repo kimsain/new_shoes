@@ -7,6 +7,7 @@ interface ActiveFilterBadgeProps {
   color: BadgeColor;
 }
 
+// Tailwind JIT를 위해 전체 클래스명 명시
 const COLOR_STYLES: Record<BadgeColor, string> = {
   emerald: 'bg-emerald-500/15 text-emerald-400',
   sky: 'bg-sky-500/15 text-sky-400',

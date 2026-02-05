@@ -1,16 +1,23 @@
-import { STATUS_THRESHOLDS, STATUS_COLORS } from '@/constants';
+import { STATUS } from '@/styles/tokens';
 
-export type StatusLevel = 'expired' | 'urgent' | 'warning' | 'safe' | 'unknown';
+// 상태 임계값 (일)
+const THRESHOLDS = {
+  EXPIRED: 0,
+  URGENT: 30,
+  WARNING: 90,
+} as const;
+
+export type StatusLevel = keyof typeof STATUS;
 
 export interface StatusInfo {
   level: StatusLevel;
   text: string;
   remainingDays: number | null;
-  colors: typeof STATUS_COLORS[StatusLevel];
+  colors: typeof STATUS[StatusLevel];
 }
 
 /**
- * Calculate remaining days from today to the end date
+ * 오늘부터 종료일까지 남은 일수 계산
  */
 export function getRemainingDays(endDateStr: string | undefined): number | null {
   if (!endDateStr) return null;
@@ -21,7 +28,7 @@ export function getRemainingDays(endDateStr: string | undefined): number | null 
 }
 
 /**
- * Format date string to Korean locale
+ * 날짜 문자열을 한국어 형식으로 포맷
  */
 export function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return '-';
@@ -34,23 +41,23 @@ export function formatDate(dateStr: string | undefined): string {
 }
 
 /**
- * Get status level based on remaining days
+ * 남은 일수 기반 상태 레벨 반환
  */
 export function getStatusLevel(remainingDays: number | null): StatusLevel {
   if (remainingDays === null) return 'unknown';
-  if (remainingDays <= STATUS_THRESHOLDS.EXPIRED) return 'expired';
-  if (remainingDays <= STATUS_THRESHOLDS.URGENT) return 'urgent';
-  if (remainingDays <= STATUS_THRESHOLDS.WARNING) return 'warning';
+  if (remainingDays <= THRESHOLDS.EXPIRED) return 'expired';
+  if (remainingDays <= THRESHOLDS.URGENT) return 'urgent';
+  if (remainingDays <= THRESHOLDS.WARNING) return 'warning';
   return 'safe';
 }
 
 /**
- * Get comprehensive status info for a shoe
+ * 신발의 종합 상태 정보 반환 (카드용)
  */
 export function getStatusInfo(endDateStr: string | undefined): StatusInfo {
   const remainingDays = getRemainingDays(endDateStr);
   const level = getStatusLevel(remainingDays);
-  const colors = STATUS_COLORS[level];
+  const colors = STATUS[level];
 
   let text: string;
   switch (level) {
@@ -68,7 +75,7 @@ export function getStatusInfo(endDateStr: string | undefined): StatusInfo {
 }
 
 /**
- * Get detailed status info for modal display
+ * 상세 상태 정보 반환 (모달용)
  */
 export function getDetailedStatusInfo(endDateStr: string | undefined): {
   text: string;
@@ -79,7 +86,7 @@ export function getDetailedStatusInfo(endDateStr: string | undefined): {
 } {
   const remainingDays = getRemainingDays(endDateStr);
   const level = getStatusLevel(remainingDays);
-  const colors = STATUS_COLORS[level];
+  const colors = STATUS[level];
 
   let text: string;
   switch (level) {

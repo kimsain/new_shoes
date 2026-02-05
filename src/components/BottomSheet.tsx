@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
+import { BG, BORDER, TEXT, BOTTOMSHEET } from '@/styles/tokens';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -11,7 +12,6 @@ interface BottomSheetProps {
 }
 
 export default function BottomSheet({ isOpen, onClose, title, footer, children }: BottomSheetProps) {
-  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -29,23 +29,23 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        className={`absolute inset-0 ${BOTTOMSHEET.backdrop} backdrop-blur-sm animate-in fade-in duration-200`}
         onClick={onClose}
       />
 
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-3xl border-t border-white/10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
+      <div className={`absolute bottom-0 left-0 right-0 ${BOTTOMSHEET.container} rounded-t-3xl border-t ${BOTTOMSHEET.border} animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col`}>
         {/* Drag Handle */}
         <div className="flex justify-center py-3">
-          <div className="w-10 h-1 rounded-full bg-zinc-600" />
+          <div className={`w-10 h-1 rounded-full ${BOTTOMSHEET.handle}`} />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.06]">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className={`flex items-center justify-between px-5 pb-4 border-b ${BORDER.subtle}`}>
+          <h3 className={`text-lg font-semibold ${TEXT.primary}`}>{title}</h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+            className={`p-2 rounded-xl ${TEXT.tertiary} hover:text-white hover:bg-white/[0.06] transition-all`}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -60,7 +60,7 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
 
         {/* Footer */}
         {footer && (
-          <div className="p-4 border-t border-white/[0.06] bg-zinc-900/95 backdrop-blur-sm">
+          <div className={`p-4 border-t ${BORDER.subtle} ${BOTTOMSHEET.footer} backdrop-blur-sm`}>
             {footer}
           </div>
         )}
