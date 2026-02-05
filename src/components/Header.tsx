@@ -60,12 +60,6 @@ export default function Header() {
 
         {/* Right - Links */}
         <div className="flex items-center gap-3">
-          {/* Keyboard shortcut hint */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-            <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 bg-white/[0.06] rounded">⌘</kbd>
-            <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 bg-white/[0.06] rounded">K</kbd>
-          </div>
-
           <a
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"

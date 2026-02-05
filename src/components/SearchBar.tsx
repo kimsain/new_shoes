@@ -53,11 +53,11 @@ export default function SearchBar({
           placeholder={placeholder}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className={`search-input w-full ${compact ? 'pl-10 pr-20' : 'pl-11 pr-24'} py-3 rounded-2xl bg-white/[0.02] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.04] transition-all duration-200 text-sm`}
+          className={`search-input w-full ${compact ? 'pl-10 pr-10' : 'pl-11 pr-10'} py-3 rounded-2xl bg-white/[0.02] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.04] transition-all duration-200 text-sm`}
         />
 
-        {/* Right side: Clear button or Keyboard shortcut */}
-        {searchInput ? (
+        {/* Clear button */}
+        {searchInput && (
           <button
             onClick={clearSearch}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
@@ -67,17 +67,6 @@ export default function SearchBar({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        ) : (
-          !compact && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 bg-white/[0.06] rounded border border-white/[0.06]">
-                ⌘
-              </kbd>
-              <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 bg-white/[0.06] rounded border border-white/[0.06]">
-                K
-              </kbd>
-            </div>
-          )
         )}
       </div>
 
