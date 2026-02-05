@@ -46,7 +46,15 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
   return (
     <article
       onClick={onClick}
-      className="card group relative cursor-pointer overflow-hidden"
+      className="card group relative cursor-pointer overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+      tabIndex={0}
+      role="button"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] bg-zinc-950/50 overflow-hidden">
@@ -122,9 +130,9 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
 
         {/* Type + Disciplines */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-zinc-500">{shoe.shoeType}</span>
-          <span className="text-zinc-700">·</span>
-          <span className="text-sm text-zinc-500">{shoe.disciplines.length}개 종목</span>
+          <span className="text-sm text-zinc-400">{shoe.shoeType}</span>
+          <span className="text-zinc-600">·</span>
+          <span className="text-sm text-zinc-400">{shoe.disciplines.length}개 종목</span>
         </div>
 
         {/* Footer - Disciplines preview */}
