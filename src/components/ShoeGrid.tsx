@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import * as React from 'react';
 import { Shoe } from '@/types/shoe';
+import { getDisplayName } from '@/utils/displayNames';
 import ShoeCard from './ShoeCard';
 import ShoeModal from './ShoeModal';
 
@@ -274,8 +275,8 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-2">
-                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${
                   selectedBrands.has(name) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
                 }`}>
                   {selectedBrands.has(name) && (
@@ -284,9 +285,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                     </svg>
                   )}
                 </span>
-                {name}
+                <span className="break-words text-left">{name}</span>
               </span>
-              <span className="text-xs text-zinc-600">{count}</span>
+              <span className="text-xs text-zinc-600 flex-shrink-0 ml-2">{count}</span>
             </button>
           ))}
         </div>
@@ -311,8 +312,8 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-2">
-                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${
                   selectedDisciplines.has(name) ? 'bg-sky-500 border-sky-500' : 'border-zinc-600'
                 }`}>
                   {selectedDisciplines.has(name) && (
@@ -321,9 +322,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                     </svg>
                   )}
                 </span>
-                <span className="break-words text-left">{name}</span>
+                <span className="break-words text-left">{getDisplayName(name)}</span>
               </span>
-              <span className="text-xs text-zinc-600 ml-2">{count}</span>
+              <span className="text-xs text-zinc-600 flex-shrink-0 ml-2">{count}</span>
             </button>
           ))}
         </div>
@@ -348,8 +349,8 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                   : 'text-zinc-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-2">
-                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${
                   selectedTypes.has(name) ? 'bg-violet-500 border-violet-500' : 'border-zinc-600'
                 }`}>
                   {selectedTypes.has(name) && (
@@ -358,9 +359,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                     </svg>
                   )}
                 </span>
-                {name}
+                <span className="break-words text-left">{name}</span>
               </span>
-              <span className="text-xs text-zinc-600">{count}</span>
+              <span className="text-xs text-zinc-600 flex-shrink-0 ml-2">{count}</span>
             </button>
           ))}
         </div>
@@ -420,7 +421,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         {disciplinesWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
-            label={`${name} (${count})`}
+            label={`${getDisplayName(name)} (${count})`}
             active={selectedDisciplines.has(name)}
             onClick={() => toggleDiscipline(name)}
             color="sky"

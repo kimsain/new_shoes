@@ -1,6 +1,7 @@
 'use client';
 
 import { Shoe } from '@/types/shoe';
+import { getDisplayName } from '@/utils/displayNames';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
@@ -196,7 +197,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
                     key={disc.name}
                     className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-xl text-sm transition-colors duration-200"
                   >
-                    {disc.name}
+                    {getDisplayName(disc.name)}
                   </span>
                 ))}
               </div>

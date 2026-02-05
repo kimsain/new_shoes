@@ -1,6 +1,7 @@
 'use client';
 
 import { Shoe } from '@/types/shoe';
+import { getDisplayName } from '@/utils/displayNames';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -137,7 +138,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
               key={disc.name}
               className="px-2 py-1 bg-zinc-800/70 text-zinc-300 rounded-md text-xs break-words"
             >
-              {disc.name}
+              {getDisplayName(disc.name)}
             </span>
           ))}
           {shoe.disciplines.length > 2 && (
