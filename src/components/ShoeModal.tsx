@@ -227,7 +227,7 @@ function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors duration-200">
       <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-white font-medium truncate" title={value}>
+      <p className="text-sm text-white font-medium break-words" title={value}>
         {value}
       </p>
     </div>

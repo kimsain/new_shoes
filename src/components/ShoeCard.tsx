@@ -119,7 +119,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
       <div className="p-4">
         {/* Top Row: Product Name + D-day */}
         <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="font-semibold text-white line-clamp-1 group-hover:text-emerald-400 transition-colors duration-300 flex-1">
+          <h3 className="font-semibold text-white line-clamp-2 break-words group-hover:text-emerald-400 transition-colors duration-300 flex-1">
             {shoe.productName}
           </h3>
           <span className={`${status.bgColor} ${status.textColor} px-2 py-0.5 rounded-md text-xs font-bold tabular-nums whitespace-nowrap`}>
@@ -135,7 +135,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
           {shoe.disciplines.slice(0, 2).map((disc) => (
             <span
               key={disc.name}
-              className="px-2 py-1 bg-zinc-800/70 text-zinc-300 rounded-md text-xs truncate max-w-[120px]"
+              className="px-2 py-1 bg-zinc-800/70 text-zinc-300 rounded-md text-xs break-words"
             >
               {disc.name}
             </span>

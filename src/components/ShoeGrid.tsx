@@ -321,7 +321,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                     </svg>
                   )}
                 </span>
-                <span className="truncate">{name}</span>
+                <span className="break-words text-left">{name}</span>
               </span>
               <span className="text-xs text-zinc-600 ml-2">{count}</span>
             </button>

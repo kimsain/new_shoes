@@ -349,6 +349,13 @@ button:focus:not(:focus-visible) {
   font-variant-numeric: tabular-nums;
 }
 
+/* Word-level text wrapping */
+.break-words {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
 /* Button press effect */
 .btn-press:active {
   transform: scale(0.97);
