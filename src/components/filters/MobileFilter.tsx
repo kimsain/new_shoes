@@ -49,7 +49,7 @@ export default function MobileFilter({
   clearAllFilters,
 }: MobileFilterProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Status */}
       <FilterSection title="Status">
         {STATUS_OPTIONS.map(({ value, label, color }) => (
@@ -84,7 +84,7 @@ export default function MobileFilter({
             label={`${getDisplayName(name)} (${count})`}
             active={selectedDisciplines.has(name)}
             onClick={() => toggleDiscipline(name)}
-            color="violet"
+            color="indigo"
           />
         ))}
       </FilterSection>
@@ -97,7 +97,7 @@ export default function MobileFilter({
             label={`${name} (${count})`}
             active={selectedTypes.has(name)}
             onClick={() => toggleType(name)}
-            color="violet"
+            color="indigo"
           />
         ))}
       </FilterSection>

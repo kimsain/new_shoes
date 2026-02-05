@@ -126,7 +126,7 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
             {shoe.manufacturerName}
           </span>
           {isNew && (
-            <span className="bg-indigo-500 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide shadow-lg shadow-indigo-500/30">
+            <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
               New
             </span>
           )}

@@ -100,7 +100,7 @@ export default function SidebarFilter({
                 className={`filter-list-item ${isActive ? 'active' : ''}`}
               >
                 <span className="flex items-center gap-2 min-w-0">
-                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-violet-400' : 'bg-zinc-600'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-indigo-400' : 'bg-zinc-600'}`} />
                   <span className="truncate">{getDisplayName(name)}</span>
                 </span>
                 <span className="text-[10px] text-zinc-600 flex-shrink-0">{count}</span>
@@ -125,7 +125,7 @@ export default function SidebarFilter({
                 className={`filter-list-item ${isActive ? 'active' : ''}`}
               >
                 <span className="flex items-center gap-2 min-w-0">
-                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-purple-400' : 'bg-zinc-600'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-indigo-400' : 'bg-zinc-600'}`} />
                   <span className="truncate">{name}</span>
                 </span>
                 <span className="text-[10px] text-zinc-600 flex-shrink-0">{count}</span>

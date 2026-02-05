@@ -40,14 +40,14 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -59,7 +59,7 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
 
         {/* Footer */}
         {footer && (
-          <div className="p-4 border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-sm">
+          <div className="p-5 border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-sm">
             {footer}
           </div>
         )}

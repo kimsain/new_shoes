@@ -13,7 +13,7 @@ export default function SectionHeader({ title, badge, count }: SectionHeaderProp
     <div className="flex items-center gap-3 mb-4">
       <div className="flex items-center gap-2">
         {badge && (
-          <span className={`px-2 py-0.5 rounded ${BADGE.section.bg} ${BADGE.section.text} text-[10px] font-bold uppercase tracking-wide`}>
+          <span className={`px-2 py-0.5 rounded ${BADGE.section.bg} ${BADGE.section.text} border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wide`}>
             {badge}
           </span>
         )}

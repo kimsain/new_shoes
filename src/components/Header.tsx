@@ -64,7 +64,7 @@ export default function Header() {
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} text-sm text-zinc-400 ${BUTTON.secondary.hover} transition-all duration-300`}
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} text-sm text-zinc-400 ${BUTTON.secondary.hover} transition-all duration-300`}
           >
             <span className="hidden sm:inline">Source</span>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

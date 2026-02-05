@@ -384,16 +384,19 @@ export const ANIMATION = {
 
 export const BADGE = {
   new: {
-    bg: 'bg-indigo-500',
-    text: 'text-white',
+    bg: 'bg-indigo-500/15',
+    text: 'text-indigo-400',
+    border: 'border-indigo-500/30',
   },
   brand: {
     bg: 'bg-black/60',
     text: 'text-white/90',
+    border: 'border-white/[0.06]',
   },
   section: {
     bg: 'bg-indigo-500/15',
     text: 'text-indigo-400',
+    border: 'border-indigo-500/30',
   },
 } as const;
 
