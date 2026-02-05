@@ -5,17 +5,14 @@ import { Shoe } from '@/types/shoe';
 import ShoeCard from './ShoeCard';
 import ShoeModal from './ShoeModal';
 
-// Priority brands - always shown first in this order
 const PRIORITY_BRANDS = ['Nike', 'Adidas', 'Puma', 'Asics'];
 
-// Status filter options
 type StatusFilter = 'all' | 'valid' | 'expiring' | 'expired';
 
 interface ShoeGridProps {
   shoes: Shoe[];
 }
 
-// Helper function to sort brands with priority
 function sortBrandsWithPriority(brands: string[]): string[] {
   return [...brands].sort((a, b) => {
     const aIndex = PRIORITY_BRANDS.indexOf(a);
@@ -28,7 +25,6 @@ function sortBrandsWithPriority(brands: string[]): string[] {
   });
 }
 
-// Get remaining days from end date
 function getRemainingDays(endDateStr: string | undefined): number | null {
   if (!endDateStr) return null;
   const endDate = new Date(endDateStr);
@@ -42,16 +38,13 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'newest' | 'expiring' | 'alphabetical'>('newest');
 
-  // Filter states
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [selectedDisciplines, setSelectedDisciplines] = useState<Set<string>>(new Set());
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  // UI state
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Get 4 newest shoes
   const newestShoes = useMemo(() => {
     return [...shoes]
       .sort((a, b) => {
@@ -62,7 +55,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       .slice(0, 4);
   }, [shoes]);
 
-  // Extract all unique disciplines with count
   const disciplinesWithCount = useMemo(() => {
     const disciplineMap = new Map<string, number>();
     shoes.forEach((shoe) => {
@@ -76,7 +68,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       .map(([name, count]) => ({ name, count }));
   }, [shoes]);
 
-  // Extract all unique shoe types with count
   const typesWithCount = useMemo(() => {
     const typeMap = new Map<string, number>();
     shoes.forEach((shoe) => {
@@ -88,7 +79,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       .map(([name, count]) => ({ name, count }));
   }, [shoes]);
 
-  // Get unique brands with count - sorted with priority brands first
   const brandsWithCount = useMemo(() => {
     const brandMap = new Map<string, number>();
     shoes.forEach((shoe) => {
@@ -110,7 +100,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     return entries.map(([name, count]) => ({ name, count }));
   }, [shoes]);
 
-  // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedBrands.size > 0) count++;
@@ -120,23 +109,15 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     return count;
   }, [selectedBrands, selectedDisciplines, selectedTypes, statusFilter]);
 
-  // Check if any filter is active
   const hasActiveFilters = activeFilterCount > 0 || searchQuery !== '';
 
-  // Filter and sort shoes
   const filteredShoes = useMemo(() => {
     let result = shoes.filter((shoe) => {
-      // Brand filter
       const matchesBrand = selectedBrands.size === 0 || selectedBrands.has(shoe.manufacturerName);
-
-      // Discipline filter
       const matchesDiscipline = selectedDisciplines.size === 0 ||
         shoe.disciplines.some(d => selectedDisciplines.has(d.name));
-
-      // Type filter
       const matchesType = selectedTypes.size === 0 || selectedTypes.has(shoe.shoeType);
 
-      // Status filter
       const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
       let matchesStatus = true;
       if (statusFilter === 'expired') {
@@ -147,7 +128,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         matchesStatus = remainingDays === null || remainingDays > 30;
       }
 
-      // Search filter
       const matchesSearch =
         searchQuery === '' ||
         shoe.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,7 +137,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       return matchesBrand && matchesDiscipline && matchesType && matchesStatus && matchesSearch;
     });
 
-    // Sort
     if (sortBy === 'expiring') {
       result.sort((a, b) => {
         const dateA = a.certificationEndDateExp ? new Date(a.certificationEndDateExp).getTime() : Infinity;
@@ -167,7 +146,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     } else if (sortBy === 'alphabetical') {
       result.sort((a, b) => a.productName.localeCompare(b.productName));
     } else {
-      // newest
       result.sort((a, b) => {
         const dateA = a.certificationStartDateExp ? new Date(a.certificationStartDateExp).getTime() : 0;
         const dateB = b.certificationStartDateExp ? new Date(b.certificationStartDateExp).getTime() : 0;
@@ -178,7 +156,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     return result;
   }, [shoes, selectedBrands, selectedDisciplines, selectedTypes, statusFilter, searchQuery, sortBy]);
 
-  // Group by brand
   const groupedShoes = useMemo(() => {
     const grouped: Record<string, Shoe[]> = {};
     filteredShoes.forEach((shoe) => {
@@ -192,34 +169,21 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
 
   const sortedBrands = sortBrandsWithPriority(Object.keys(groupedShoes));
 
-  // Toggle functions
   const toggleBrand = (brand: string) => {
     const newSet = new Set(selectedBrands);
-    if (newSet.has(brand)) {
-      newSet.delete(brand);
-    } else {
-      newSet.add(brand);
-    }
+    newSet.has(brand) ? newSet.delete(brand) : newSet.add(brand);
     setSelectedBrands(newSet);
   };
 
   const toggleDiscipline = (discipline: string) => {
     const newSet = new Set(selectedDisciplines);
-    if (newSet.has(discipline)) {
-      newSet.delete(discipline);
-    } else {
-      newSet.add(discipline);
-    }
+    newSet.has(discipline) ? newSet.delete(discipline) : newSet.add(discipline);
     setSelectedDisciplines(newSet);
   };
 
   const toggleType = (type: string) => {
     const newSet = new Set(selectedTypes);
-    if (newSet.has(type)) {
-      newSet.delete(type);
-    } else {
-      newSet.add(type);
-    }
+    newSet.has(type) ? newSet.delete(type) : newSet.add(type);
     setSelectedTypes(newSet);
   };
 
@@ -234,36 +198,31 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   return (
     <>
       {/* Sticky Filter Bar */}
-      <div className="sticky top-16 z-40 -mx-4 px-4 py-4 bg-[#0f0f0f]/95 backdrop-blur-xl border-b border-gray-800/50 mb-8">
+      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 glass mb-10">
         <div className="flex flex-col gap-4">
-          {/* Search and Controls Row */}
+          {/* Search and Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search Input */}
+            {/* Search */}
             <div className="relative flex-1">
               <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
                 placeholder="신발명, 브랜드, 모델번호 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-900 text-white placeholder-gray-500 border border-gray-800 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+                className="w-full pl-11 pr-10 py-3 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -272,22 +231,22 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               )}
             </div>
 
-            {/* Filter Toggle & Sort */}
-            <div className="flex gap-3">
+            {/* Controls */}
+            <div className="flex gap-2">
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                className={`px-4 py-3 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
                   showAdvancedFilters || activeFilterCount > 0
-                    ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                    : 'bg-gray-900 border-gray-800 text-white hover:border-gray-700'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
                 }`}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <span className="hidden sm:inline">필터</span>
+                <span className="hidden sm:inline text-sm">필터</span>
                 {activeFilterCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-green-500 text-white text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
@@ -296,7 +255,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'newest' | 'expiring' | 'alphabetical')}
-                className="px-4 py-2.5 rounded-xl bg-gray-900 text-white border border-gray-800 focus:outline-none focus:border-green-500/50 transition-all min-w-[120px]"
+                className="px-4 py-3 rounded-xl bg-white/[0.03] text-white border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 text-sm cursor-pointer"
               >
                 <option value="newest">최신순</option>
                 <option value="expiring">만료임박순</option>
@@ -305,115 +264,75 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             </div>
           </div>
 
-          {/* Advanced Filters Panel */}
+          {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800 space-y-4 animate-in slide-in-from-top-2 duration-200">
-              {/* Status Filter */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">상태</h4>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { value: 'all', label: '전체', color: 'gray' },
-                    { value: 'valid', label: '유효', color: 'green' },
-                    { value: 'expiring', label: '만료임박 (30일)', color: 'amber' },
-                    { value: 'expired', label: '만료됨', color: 'red' },
-                  ].map(({ value, label, color }) => (
-                    <button
-                      key={value}
-                      onClick={() => setStatusFilter(value as StatusFilter)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        statusFilter === value
-                          ? color === 'green' ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                          : color === 'amber' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
-                          : color === 'red' ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-                          : 'bg-gray-700 text-white border border-gray-600'
-                          : 'bg-gray-800 text-gray-400 border border-transparent hover:bg-gray-700 hover:text-white'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="animate-fade-in bg-black/20 rounded-2xl p-5 border border-white/[0.04] space-y-5">
+              {/* Status */}
+              <FilterSection title="상태">
+                {[
+                  { value: 'all', label: '전체' },
+                  { value: 'valid', label: '유효' },
+                  { value: 'expiring', label: '만료임박' },
+                  { value: 'expired', label: '만료됨' },
+                ].map(({ value, label }) => (
+                  <FilterChip
+                    key={value}
+                    label={label}
+                    active={statusFilter === value}
+                    onClick={() => setStatusFilter(value as StatusFilter)}
+                    color={value === 'valid' ? 'emerald' : value === 'expiring' ? 'amber' : value === 'expired' ? 'red' : 'zinc'}
+                  />
+                ))}
+              </FilterSection>
 
-              {/* Brand Filter */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  브랜드 {selectedBrands.size > 0 && <span className="text-green-400">({selectedBrands.size})</span>}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {brandsWithCount.map(({ name, count }) => (
-                    <button
-                      key={name}
-                      onClick={() => toggleBrand(name)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        selectedBrands.has(name)
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                      }`}
-                    >
-                      {name}
-                      <span className="ml-1 opacity-60">({count})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Brands */}
+              <FilterSection title="브랜드" count={selectedBrands.size}>
+                {brandsWithCount.map(({ name, count }) => (
+                  <FilterChip
+                    key={name}
+                    label={`${name} (${count})`}
+                    active={selectedBrands.has(name)}
+                    onClick={() => toggleBrand(name)}
+                    color="emerald"
+                  />
+                ))}
+              </FilterSection>
 
-              {/* Discipline Filter */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  종목 {selectedDisciplines.size > 0 && <span className="text-green-400">({selectedDisciplines.size})</span>}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {disciplinesWithCount.map(({ name, count }) => (
-                    <button
-                      key={name}
-                      onClick={() => toggleDiscipline(name)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        selectedDisciplines.has(name)
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                      }`}
-                    >
-                      {name}
-                      <span className="ml-1 opacity-60">({count})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Disciplines */}
+              <FilterSection title="종목" count={selectedDisciplines.size}>
+                {disciplinesWithCount.map(({ name, count }) => (
+                  <FilterChip
+                    key={name}
+                    label={`${name} (${count})`}
+                    active={selectedDisciplines.has(name)}
+                    onClick={() => toggleDiscipline(name)}
+                    color="sky"
+                  />
+                ))}
+              </FilterSection>
 
-              {/* Type Filter */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  신발 유형 {selectedTypes.size > 0 && <span className="text-green-400">({selectedTypes.size})</span>}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {typesWithCount.map(({ name, count }) => (
-                    <button
-                      key={name}
-                      onClick={() => toggleType(name)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        selectedTypes.has(name)
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                      }`}
-                    >
-                      {name}
-                      <span className="ml-1 opacity-60">({count})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Types */}
+              <FilterSection title="신발 유형" count={selectedTypes.size}>
+                {typesWithCount.map(({ name, count }) => (
+                  <FilterChip
+                    key={name}
+                    label={`${name} (${count})`}
+                    active={selectedTypes.has(name)}
+                    onClick={() => toggleType(name)}
+                    color="violet"
+                  />
+                ))}
+              </FilterSection>
 
-              {/* Clear All Button */}
+              {/* Clear */}
               {hasActiveFilters && (
-                <div className="pt-2 border-t border-gray-800">
+                <div className="pt-3 border-t border-white/[0.04]">
                   <button
                     onClick={clearAllFilters}
-                    className="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-medium flex items-center gap-2"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all duration-200"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     모든 필터 초기화
                   </button>
@@ -422,41 +341,23 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             </div>
           )}
 
-          {/* Active Filters Summary (when panel is closed) */}
+          {/* Active Filters Summary */}
           {!showAdvancedFilters && hasActiveFilters && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-500">활성 필터:</span>
-              {selectedBrands.size > 0 && (
-                <span className="px-2 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs">
-                  브랜드: {selectedBrands.size}개
-                </span>
-              )}
-              {selectedDisciplines.size > 0 && (
-                <span className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs">
-                  종목: {selectedDisciplines.size}개
-                </span>
-              )}
-              {selectedTypes.size > 0 && (
-                <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-xs">
-                  유형: {selectedTypes.size}개
-                </span>
-              )}
+              <span className="text-xs text-zinc-600">활성:</span>
+              {selectedBrands.size > 0 && <ActiveFilterBadge label={`브랜드 ${selectedBrands.size}`} color="emerald" />}
+              {selectedDisciplines.size > 0 && <ActiveFilterBadge label={`종목 ${selectedDisciplines.size}`} color="sky" />}
+              {selectedTypes.size > 0 && <ActiveFilterBadge label={`유형 ${selectedTypes.size}`} color="violet" />}
               {statusFilter !== 'all' && (
-                <span className={`px-2 py-1 rounded-lg text-xs ${
-                  statusFilter === 'valid' ? 'bg-green-500/20 text-green-400'
-                  : statusFilter === 'expiring' ? 'bg-amber-500/20 text-amber-400'
-                  : 'bg-red-500/20 text-red-400'
-                }`}>
-                  {statusFilter === 'valid' ? '유효' : statusFilter === 'expiring' ? '만료임박' : '만료됨'}
-                </span>
+                <ActiveFilterBadge
+                  label={statusFilter === 'valid' ? '유효' : statusFilter === 'expiring' ? '만료임박' : '만료됨'}
+                  color={statusFilter === 'valid' ? 'emerald' : statusFilter === 'expiring' ? 'amber' : 'red'}
+                />
               )}
               <button
                 onClick={clearAllFilters}
-                className="px-2 py-1 rounded-lg bg-gray-800 text-gray-400 hover:text-white text-xs flex items-center gap-1"
+                className="px-2 py-1 rounded-lg text-xs text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
                 초기화
               </button>
             </div>
@@ -464,30 +365,21 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="flex items-center justify-between mb-6 text-sm">
-        <p className="text-gray-400">
-          <span className="text-white font-medium">{filteredShoes.length}</span>개 제품
+      {/* Results */}
+      <div className="flex items-center justify-between mb-8">
+        <p className="text-sm text-zinc-500">
+          <span className="text-white font-medium tabular-nums">{filteredShoes.length}</span>개 결과
           {filteredShoes.length !== shoes.length && (
-            <span className="text-gray-500 ml-1">(전체 {shoes.length}개)</span>
+            <span className="text-zinc-600 ml-1">/ 전체 {shoes.length}</span>
           )}
         </p>
       </div>
 
-      {/* Newest Section - Only show when no filters applied */}
+      {/* Newest Section */}
       {!hasActiveFilters && (
-        <section className="mb-12">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-semibold">NEW</span>
-              <h2 className="text-xl font-bold text-white">Newest</h2>
-            </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-gray-800 text-gray-400 text-sm">
-              {newestShoes.length}
-            </span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <section className="mb-14">
+          <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-children">
             {newestShoes.map((shoe) => (
               <ShoeCard
                 key={`newest-${shoe.productApplicationuuid}`}
@@ -500,17 +392,11 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         </section>
       )}
 
-      {/* Shoe Grid grouped by brand */}
+      {/* Brand Sections */}
       {sortedBrands.map((brand) => (
-        <section key={brand} className="mb-12">
-          <div className="flex items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-white">{brand}</h2>
-            <span className="px-2.5 py-0.5 rounded-full bg-gray-800 text-gray-400 text-sm">
-              {groupedShoes[brand].length}
-            </span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <section key={brand} className="mb-14">
+          <SectionHeader title={brand} count={groupedShoes[brand].length} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-children">
             {groupedShoes[brand].map((shoe) => (
               <ShoeCard
                 key={shoe.productApplicationuuid}
@@ -522,19 +408,20 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         </section>
       ))}
 
+      {/* Empty State */}
       {filteredShoes.length === 0 && (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="text-center py-20">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-zinc-800/50 flex items-center justify-center">
+            <svg className="w-10 h-10 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <p className="text-lg text-white mb-2">검색 결과가 없습니다</p>
-          <p className="text-gray-500 text-sm mb-4">다른 검색어나 필터를 시도해보세요</p>
+          <p className="text-xl text-white mb-2">검색 결과가 없습니다</p>
+          <p className="text-zinc-500 mb-6">다른 검색어나 필터를 시도해보세요</p>
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all text-sm font-medium"
+              className="px-6 py-3 rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 transition-all duration-300"
             >
               필터 초기화
             </button>
@@ -547,5 +434,88 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         <ShoeModal shoe={selectedShoe} onClose={() => setSelectedShoe(null)} />
       )}
     </>
+  );
+}
+
+function FilterSection({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) {
+  return (
+    <div>
+      <h4 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3">
+        {title}
+        {count !== undefined && count > 0 && <span className="text-emerald-400 ml-1">({count})</span>}
+      </h4>
+      <div className="flex flex-wrap gap-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+  color,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  color: 'emerald' | 'sky' | 'violet' | 'amber' | 'red' | 'zinc';
+}) {
+  const colors = {
+    emerald: active ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : '',
+    sky: active ? 'bg-sky-500/20 text-sky-400 border-sky-500/30' : '',
+    violet: active ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' : '',
+    amber: active ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : '',
+    red: active ? 'bg-red-500/20 text-red-400 border-red-500/30' : '',
+    zinc: active ? 'bg-zinc-700 text-white border-zinc-600' : '',
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${
+        active
+          ? colors[color]
+          : 'bg-white/[0.03] text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-white'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function ActiveFilterBadge({ label, color }: { label: string; color: 'emerald' | 'sky' | 'violet' | 'amber' | 'red' }) {
+  const colors = {
+    emerald: 'bg-emerald-500/15 text-emerald-400',
+    sky: 'bg-sky-500/15 text-sky-400',
+    violet: 'bg-violet-500/15 text-violet-400',
+    amber: 'bg-amber-500/15 text-amber-400',
+    red: 'bg-red-500/15 text-red-400',
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${colors[color]}`}>
+      {label}
+    </span>
+  );
+}
+
+function SectionHeader({ title, badge, count }: { title: string; badge?: string; count: number }) {
+  return (
+    <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3">
+        {badge && (
+          <span className="px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
+            {badge}
+          </span>
+        )}
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
+      </div>
+      <span className="px-2.5 py-1 rounded-lg bg-white/[0.03] text-zinc-500 text-sm tabular-nums">
+        {count}
+      </span>
+      <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />
+    </div>
   );
 }

@@ -7,7 +7,7 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -16,16 +16,16 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-gray-800/50'
+          ? 'glass shadow-lg shadow-black/10'
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+        <a href="#" className="flex items-center gap-3 group">
+          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow duration-300">
             <svg
               className="w-5 h-5 text-white"
               fill="none"
@@ -40,31 +40,43 @@ export default function Header() {
               />
             </svg>
           </div>
-          <span className="font-semibold text-white">DevShoes</span>
+          <div className="flex flex-col">
+            <span className="font-semibold text-white text-sm leading-tight">DevShoes</span>
+            <span className="text-[10px] text-zinc-500 leading-tight">by World Athletics</span>
+          </div>
+        </a>
+
+        {/* Center - Status */}
+        <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-medium text-emerald-400">실시간 동기화</span>
+          </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <a href="#" className="text-gray-400 hover:text-white transition-colors">
-            전체 신발
-          </a>
+        {/* Right - Links */}
+        <div className="flex items-center gap-4">
           <a
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors"
+            className="hidden sm:flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors duration-300"
           >
-            공식 사이트
+            <span>공식 사이트</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
           </a>
-        </nav>
 
-        {/* Status Badge */}
-        <div className="flex items-center gap-2 text-sm">
-          <span className="hidden sm:inline text-gray-500">Status:</span>
-          <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            Live
-          </span>
+          {/* Mobile menu button - can be expanded later */}
+          <button className="sm:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
     </header>

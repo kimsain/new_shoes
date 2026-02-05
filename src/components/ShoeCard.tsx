@@ -20,12 +20,6 @@ function getRemainingDays(endDateStr: string | undefined): number | null {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function formatDateShort(dateStr: string | undefined): string {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-}
-
 export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -33,18 +27,18 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
 
   const getStatusInfo = () => {
     if (remainingDays === null) {
-      return { text: '기간 없음', color: 'bg-gray-600', textColor: 'text-gray-300' };
+      return { text: '기간 미정', bgColor: 'bg-zinc-800', textColor: 'text-zinc-400' };
     }
     if (remainingDays <= 0) {
-      return { text: '만료됨', color: 'bg-red-500', textColor: 'text-white' };
+      return { text: '만료', bgColor: 'bg-red-500/15', textColor: 'text-red-400' };
     }
     if (remainingDays <= 30) {
-      return { text: `D-${remainingDays}`, color: 'bg-amber-500', textColor: 'text-white' };
+      return { text: `D-${remainingDays}`, bgColor: 'bg-amber-500/15', textColor: 'text-amber-400' };
     }
     if (remainingDays <= 90) {
-      return { text: `D-${remainingDays}`, color: 'bg-blue-500', textColor: 'text-white' };
+      return { text: `D-${remainingDays}`, bgColor: 'bg-sky-500/15', textColor: 'text-sky-400' };
     }
-    return { text: `D-${remainingDays}`, color: 'bg-green-500', textColor: 'text-white' };
+    return { text: `D-${remainingDays}`, bgColor: 'bg-emerald-500/15', textColor: 'text-emerald-400' };
   };
 
   const status = getStatusInfo();
@@ -52,10 +46,10 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
   return (
     <article
       onClick={onClick}
-      className="group relative bg-gray-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:bg-gray-800 card-glow border border-gray-800 hover:border-gray-700"
+      className="card group relative cursor-pointer overflow-hidden"
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] bg-gray-950 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-zinc-950/50 overflow-hidden">
         {/* Skeleton loader */}
         {!imageLoaded && !imageError && shoe.imageDocumentuuid && (
           <div className="absolute inset-0 skeleton" />
@@ -66,7 +60,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
             src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
             alt={shoe.productName}
             fill
-            className={`object-contain p-4 transition-all duration-500 group-hover:scale-105 ${
+            className={`object-contain p-6 img-zoom ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -76,75 +70,83 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <svg
-                className="w-12 h-12 mx-auto text-gray-700 mb-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span className="text-xs text-gray-600">No Image</span>
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/50 flex items-center justify-center mb-3">
+                <svg
+                  className="w-8 h-8 text-zinc-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-600">이미지 없음</span>
             </div>
           </div>
         )}
 
-        {/* D-Day Badge - Top Right */}
+        {/* Status Badge - Top Right */}
         <div className="absolute top-3 right-3">
-          <span className={`${status.color} ${status.textColor} px-2.5 py-1 rounded-lg text-xs font-bold shadow-lg`}>
+          <span className={`${status.bgColor} ${status.textColor} px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums backdrop-blur-sm`}>
             {status.text}
           </span>
         </div>
 
-        {/* Brand Badge - Top Left */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          <span className="bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-medium">
+        {/* Brand + New Badge - Top Left */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <span className="bg-black/40 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full text-xs font-medium">
             {shoe.manufacturerName}
           </span>
           {isNew && (
-            <span className="bg-green-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-lg animate-pulse">
-              NEW
+            <span className="bg-emerald-500 text-white px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide pulse-gentle">
+              New
+            </span>
+          )}
+        </div>
+
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Product Name */}
+        <h3 className="font-semibold text-white mb-1.5 line-clamp-1 group-hover:text-emerald-400 transition-colors duration-300">
+          {shoe.productName}
+        </h3>
+
+        {/* Type + Disciplines */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm text-zinc-500">{shoe.shoeType}</span>
+          <span className="text-zinc-700">·</span>
+          <span className="text-sm text-zinc-500">{shoe.disciplines.length}개 종목</span>
+        </div>
+
+        {/* Footer - Disciplines preview */}
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          {shoe.disciplines.slice(0, 3).map((disc, idx) => (
+            <span
+              key={disc.name}
+              className="px-2 py-0.5 bg-zinc-800/60 text-zinc-400 rounded text-[11px] truncate"
+            >
+              {disc.name}
+            </span>
+          ))}
+          {shoe.disciplines.length > 3 && (
+            <span className="text-[11px] text-zinc-600">
+              +{shoe.disciplines.length - 3}
             </span>
           )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        {/* Product Name */}
-        <h3 className="font-semibold text-white mb-1 line-clamp-1 group-hover:text-green-400 transition-colors">
-          {shoe.productName}
-        </h3>
-
-        {/* Type */}
-        <p className="text-sm text-gray-500 mb-3">{shoe.shoeType}</p>
-
-        {/* Footer Info */}
-        <div className="flex items-center justify-between text-xs">
-          {/* Validity Period */}
-          <div className="text-gray-500">
-            {shoe.certificationEndDateExp && (
-              <span>~ {formatDateShort(shoe.certificationEndDateExp)}</span>
-            )}
-          </div>
-
-          {/* Disciplines Count */}
-          <div className="flex items-center gap-1 text-gray-500">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span>{shoe.disciplines.length} 종목</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hover Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      {/* Bottom accent line on hover */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </article>
   );
 }
