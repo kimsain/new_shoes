@@ -35,12 +35,12 @@ function HeroSection({ stats }: { stats: { total: number; brandCount: number; di
     <section className="relative pt-24 pb-16 lg:pt-28 lg:pb-20 px-4 overflow-hidden">
       {/* Glow Orbs Background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Orb 1 - Indigo (largest) */}
-        <div className="glow-orb-1" />
-        {/* Orb 2 - Violet */}
-        <div className="glow-orb-2" />
-        {/* Orb 3 - Cyan */}
-        <div className="glow-orb-3" />
+        {/* Orb 1 - Indigo (center-top, largest) */}
+        <div className="glow-orb glow-orb-1" />
+        {/* Orb 2 - Violet (right) */}
+        <div className="glow-orb glow-orb-2" />
+        {/* Orb 3 - Cyan (left-bottom) */}
+        <div className="glow-orb glow-orb-3" />
       </div>
 
       {/* Subtle grid pattern */}

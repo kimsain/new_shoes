@@ -97,31 +97,33 @@ body {
   pointer-events: none;
 }
 
+/* Orb 1 - Indigo (center-top, largest) */
 .glow-orb-1 {
   width: 700px;
   height: 700px;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.25);
   top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: calc(50% - 350px); /* centered: 50% minus half width */
   animation: orb-float 20s ease-in-out infinite;
 }
 
+/* Orb 2 - Violet (right side) */
 .glow-orb-2 {
   width: 500px;
   height: 500px;
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(139, 92, 246, 0.2);
   top: 50px;
-  right: 5%;
+  right: -100px; /* positioned more to the right edge */
   animation: orb-float 20s ease-in-out infinite -7s;
 }
 
+/* Orb 3 - Cyan (left-bottom) */
 .glow-orb-3 {
   width: 400px;
   height: 400px;
-  background: rgba(6, 182, 212, 0.12);
+  background: rgba(6, 182, 212, 0.15);
   bottom: -100px;
-  left: 10%;
+  left: -50px; /* positioned more to the left edge */
   animation: orb-float 20s ease-in-out infinite -14s;
 }
 
