@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { SortOption } from '@/types/filters';
 
 interface SearchBarProps {
@@ -13,6 +14,12 @@ interface SearchBarProps {
   compact?: boolean;
 }
 
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'expiring', label: 'Expiring' },
+  { value: 'alphabetical', label: 'A-Z' },
+];
+
 export default function SearchBar({
   searchInput,
   setSearchInput,
@@ -23,6 +30,35 @@ export default function SearchBar({
   placeholder = 'Search shoes, brands, models...',
   compact = false,
 }: SearchBarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown on escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  const currentLabel = SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || 'Sort';
+
   return (
     <div className={`flex ${compact ? 'gap-2' : 'gap-3'}`}>
       {/* Search Input */}
@@ -70,25 +106,51 @@ export default function SearchBar({
         )}
       </div>
 
-      {/* Sort Select */}
-      <div className="relative">
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className={`appearance-none ${compact ? 'px-3 pr-8' : 'px-4 pr-10'} py-3 rounded-2xl bg-white/[0.02] text-white border border-white/[0.06] focus:outline-none focus:border-indigo-500/50 transition-all duration-200 text-sm cursor-pointer [&>option]:bg-zinc-900 [&>option]:text-white`}
+      {/* Custom Sort Dropdown */}
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center gap-2 ${compact ? 'px-3 pr-8' : 'px-4 pr-10'} py-3 rounded-2xl bg-white/[0.02] text-white border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] focus:outline-none focus:border-indigo-500/50 transition-all duration-200 text-sm cursor-pointer`}
         >
-          <option value="newest">Newest</option>
-          <option value="expiring">Expiring</option>
-          <option value="alphabetical">A-Z</option>
-        </select>
+          <span>{currentLabel}</span>
+        </button>
+
+        {/* Dropdown Arrow */}
         <svg
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none"
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
         </svg>
+
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute right-0 top-full mt-2 w-36 py-1 rounded-xl bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08] shadow-xl shadow-black/50 z-50 animate-fade-in">
+            {SORT_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setSortBy(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm transition-all duration-150 flex items-center justify-between ${
+                  sortBy === option.value
+                    ? 'text-indigo-400 bg-indigo-500/10'
+                    : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
+                }`}
+              >
+                <span>{option.label}</span>
+                {sortBy === option.value && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
