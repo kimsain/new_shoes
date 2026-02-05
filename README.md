@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Development Shoes
 
-## Getting Started
+World Athletics에서 승인 대기 중인 개발 신발(프로토타입)을 보여주는 웹사이트입니다.
 
-First, run the development server:
+## 기능
+
+- World Athletics Shoe Checker에서 개발 신발 데이터를 자동으로 가져옴
+- 브랜드별 그룹화 및 필터링
+- 신발명, 브랜드, 모델번호로 검색
+- 상세 정보 모달 (이미지, 승인 기간, 사용 가능 종목 등)
+- 승인 만료일까지 남은 기간 표시 (D-Day)
+- 매시간 자동 데이터 갱신 (ISR)
+
+## 기술 스택
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
+- **Deployment**: Vercel
+
+## 개발
 
 ```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 프로덕션 빌드
+npm run build
+
+# 프로덕션 서버 실행
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 배포
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Vercel에 자동 배포됩니다. `main` 브랜치에 푸시하면 자동으로 배포가 시작됩니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 데이터 출처
 
-## Learn More
+[World Athletics Shoe Checker](https://certcheck.worldathletics.org/FullList)
 
-To learn more about Next.js, take a look at the following resources:
+## 주의사항
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+개발 신발(Development Shoes)은:
+- 지정된 기간 내에만 사용 가능
+- WAS Events 또는 Olympic Games에서는 사용 불가
