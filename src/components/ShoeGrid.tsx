@@ -112,31 +112,35 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       <div className="hidden lg:flex gap-6">
         {/* Sidebar */}
         <aside className="w-60 flex-shrink-0">
-          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] p-4 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Filters</h3>
-              {filters.activeFilterCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 text-xs font-medium">
-                  {filters.activeFilterCount}
-                </span>
-              )}
+          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] overflow-hidden max-h-[calc(100vh-6rem)]">
+            <div className="p-4 overflow-y-auto max-h-[calc(100vh-6rem)] scrollbar-thin">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Filters</h3>
+                {filters.activeFilterCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 text-xs font-medium">
+                    {filters.activeFilterCount}
+                  </span>
+                )}
+              </div>
+              <SidebarFilter {...filterProps} />
             </div>
-            <SidebarFilter {...filterProps} />
           </div>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">
           {/* Search Bar */}
-          <div className="sticky top-16 z-40 -mx-4 px-4 py-2 glass mb-4">
-            <SearchBar
-              searchInput={search.searchInput}
-              setSearchInput={search.setSearchInput}
-              isSearching={search.isSearching}
-              clearSearch={search.clearSearch}
-              sortBy={filters.sortBy}
-              setSortBy={filters.setSortBy}
-            />
+          <div className="sticky top-16 z-40 py-2 mb-4">
+            <div className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-white/[0.06] p-3">
+              <SearchBar
+                searchInput={search.searchInput}
+                setSearchInput={search.setSearchInput}
+                isSearching={search.isSearching}
+                clearSearch={search.clearSearch}
+                sortBy={filters.sortBy}
+                setSortBy={filters.setSortBy}
+              />
+            </div>
           </div>
 
           <MainContent

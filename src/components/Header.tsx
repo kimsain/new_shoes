@@ -23,8 +23,8 @@ export default function Header() {
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center relative">
+        {/* Logo - Left */}
         <a href="#" className="flex items-center gap-3 group">
           <div className={`relative w-9 h-9 rounded-xl ${ACCENT.gradient.bg} flex items-center justify-center shadow-lg ${ACCENT.glow.sm} group-hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] transition-all duration-300`}>
             <svg
@@ -47,8 +47,8 @@ export default function Header() {
           </div>
         </a>
 
-        {/* Center - Status */}
-        <div className="hidden md:flex items-center gap-2">
+        {/* Center - Status (absolutely positioned for true center) */}
+        <div className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
@@ -59,7 +59,7 @@ export default function Header() {
         </div>
 
         {/* Right - Links */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto">
           <a
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"
