@@ -84,7 +84,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
 
         <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
           {/* Image Section */}
-          <div className="relative lg:w-1/2 bg-black/40 flex items-center justify-center min-h-[300px] lg:min-h-[550px]">
+          <div className="relative lg:w-1/2 bg-black/40 flex items-center justify-center min-h-[300px] lg:min-h-[550px] will-change-transform">
             {!imageLoaded && !imageError && shoe.imageDocumentuuid && (
               <div className="absolute inset-0 skeleton" />
             )}

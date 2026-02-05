@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import * as React from 'react';
 import { Shoe } from '@/types/shoe';
 import ShoeCard from './ShoeCard';
 import ShoeModal from './ShoeModal';
@@ -36,6 +37,7 @@ function getRemainingDays(endDateStr: string | undefined): number | null {
 export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [selectedShoe, setSelectedShoe] = useState<Shoe | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [sortBy, setSortBy] = useState<'newest' | 'expiring' | 'alphabetical'>('newest');
 
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
@@ -44,6 +46,14 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Debounce search input
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const newestShoes = useMemo(() => {
     return [...shoes]
@@ -193,6 +203,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     setSelectedTypes(new Set());
     setStatusFilter('all');
     setSearchQuery('');
+    setSearchInput('');
   };
 
   return (
@@ -215,13 +226,16 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               <input
                 type="text"
                 placeholder="신발명, 브랜드, 모델번호 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-11 pr-10 py-3 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300"
               />
-              {searchQuery && (
+              {searchInput && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchInput('');
+                    setSearchQuery('');
+                  }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

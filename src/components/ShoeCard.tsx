@@ -57,7 +57,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
       }}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] bg-zinc-950/50 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-zinc-950/50 overflow-hidden will-change-transform">
         {/* Skeleton loader */}
         {!imageLoaded && !imageError && shoe.imageDocumentuuid && (
           <div className="absolute inset-0 skeleton" />
