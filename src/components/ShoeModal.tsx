@@ -12,7 +12,7 @@ interface ShoeModalProps {
 const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/OpenDocument/';
 
 function formatDate(dateStr: string | undefined): string {
-  if (!dateStr) return 'N/A';
+  if (!dateStr) return '-';
   const date = new Date(dateStr);
   return date.toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -30,132 +30,174 @@ function getRemainingDays(endDateStr: string | undefined): number | null {
 }
 
 export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
 
-  // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
-
-  // Prevent body scroll
-  useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
-  }, []);
+  }, [onClose]);
+
+  const getStatusInfo = () => {
+    if (remainingDays === null) {
+      return { text: '기간 없음', color: 'bg-gray-600', borderColor: 'border-gray-600' };
+    }
+    if (remainingDays <= 0) {
+      return { text: '승인 기간 만료', color: 'bg-red-500/20', borderColor: 'border-red-500/50' };
+    }
+    if (remainingDays <= 30) {
+      return { text: `만료까지 ${remainingDays}일`, color: 'bg-amber-500/20', borderColor: 'border-amber-500/50' };
+    }
+    return { text: `만료까지 ${remainingDays}일`, color: 'bg-green-500/20', borderColor: 'border-green-500/50' };
+  };
+
+  const status = getStatusInfo();
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/80"
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        className="relative bg-[#141414] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="sticky top-0 bg-slate-800 p-4 border-b border-slate-700 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">{shoe.productName}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-3xl leading-none"
-          >
-            &times;
-          </button>
-        </div>
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-white hover:bg-black/70 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-        <div className="p-6">
-          {/* Image */}
-          <div className="relative w-full h-64 md:h-80 mb-6 rounded-xl overflow-hidden bg-gray-900">
+        <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
+          {/* Image Section */}
+          <div className="relative lg:w-1/2 bg-gray-950 flex items-center justify-center min-h-[300px] lg:min-h-[500px]">
+            {!imageLoaded && !imageError && shoe.imageDocumentuuid && (
+              <div className="absolute inset-0 skeleton" />
+            )}
+
             {shoe.imageDocumentuuid && !imageError ? (
               <Image
                 src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
                 alt={shoe.productName}
                 fill
-                className="object-contain"
+                className={`object-contain p-8 transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={() => setImageLoaded(true)}
                 onError={() => setImageError(true)}
                 unoptimized
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500 text-xl">
-                이미지 없음
+              <div className="text-center text-gray-600">
+                <svg className="w-20 h-20 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p>이미지 없음</p>
               </div>
             )}
-          </div>
 
-          {/* Validity Status */}
-          {remainingDays !== null && (
-            <div
-              className={`mb-6 p-4 rounded-lg ${
-                remainingDays > 30
-                  ? 'bg-green-500/20 border border-green-500/50'
-                  : remainingDays > 0
-                    ? 'bg-yellow-500/20 border border-yellow-500/50'
-                    : 'bg-red-500/20 border border-red-500/50'
-              }`}
-            >
-              <p className="text-lg font-semibold text-white">
-                {remainingDays > 0
-                  ? `승인 만료까지 ${remainingDays}일 남음`
-                  : '승인 기간 만료됨'}
-              </p>
-              <p className="text-sm text-gray-300">
-                {formatDate(shoe.certificationStartDateExp)} ~ {formatDate(shoe.certificationEndDateExp)}
-              </p>
+            {/* Brand Badge */}
+            <div className="absolute top-4 left-4">
+              <span className="bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                {shoe.manufacturerName}
+              </span>
             </div>
-          )}
-
-          {/* Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <InfoItem label="제조사" value={shoe.manufacturerName} />
-            <InfoItem label="모델 번호" value={shoe.modelNumber} />
-            <InfoItem label="타입" value={shoe.shoeType} />
-            <InfoItem label="개발 신발" value={shoe.isDevelopmentShoe ? '예' : '아니오'} />
-            <InfoItem label="상태" value={shoe.status === 'APPROVED_UNTIL' ? '기간 한정 승인' : '승인됨'} />
-            {shoe.releaseDate && <InfoItem label="출시일" value={formatDate(shoe.releaseDateExp)} />}
           </div>
 
-          {/* Alternative Model Numbers */}
-          {shoe.alternativeModelNumbers && (
+          {/* Content Section */}
+          <div className="lg:w-1/2 p-6 lg:p-8 overflow-y-auto">
+            {/* Header */}
             <div className="mb-6">
-              <h3 className="text-sm text-gray-400 uppercase mb-2">대체 모델 번호</h3>
-              <p className="text-white bg-slate-700 p-3 rounded-lg text-sm">
-                {shoe.alternativeModelNumbers}
-              </p>
+              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                {shoe.productName}
+              </h2>
+              <p className="text-gray-400">{shoe.shoeType}</p>
             </div>
-          )}
 
-          {/* Disciplines */}
-          <div>
-            <h3 className="text-sm text-gray-400 uppercase mb-2">사용 가능 종목</h3>
-            <div className="flex flex-wrap gap-2">
-              {shoe.disciplines.map((disc) => (
-                <span
-                  key={disc.name}
-                  className="bg-purple-500/30 text-purple-200 px-3 py-1.5 rounded-lg text-sm"
-                >
-                  {disc.name}
-                </span>
-              ))}
+            {/* Status Banner */}
+            <div className={`${status.color} ${status.borderColor} border rounded-xl p-4 mb-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">승인 상태</p>
+                  <p className="text-lg font-semibold text-white">{status.text}</p>
+                </div>
+                {remainingDays !== null && remainingDays > 0 && (
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-white">D-{remainingDays}</p>
+                  </div>
+                )}
+              </div>
+              {shoe.certificationStartDateExp && shoe.certificationEndDateExp && (
+                <p className="text-sm text-gray-400 mt-2">
+                  {formatDate(shoe.certificationStartDateExp)} ~ {formatDate(shoe.certificationEndDateExp)}
+                </p>
+              )}
             </div>
-          </div>
 
-          {/* External Link */}
-          <div className="mt-6 pt-4 border-t border-slate-700">
-            <a
-              href={`https://certcheck.worldathletics.org/FullList`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-400 hover:text-purple-300 text-sm"
-            >
-              World Athletics Shoe Checker에서 보기 →
-            </a>
+            {/* Info Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <InfoCard label="모델 번호" value={shoe.modelNumber || '-'} />
+              <InfoCard label="개발 신발" value={shoe.isDevelopmentShoe ? '예' : '아니오'} />
+              <InfoCard
+                label="상태"
+                value={shoe.status === 'APPROVED_UNTIL' ? '기간 한정' : '승인됨'}
+              />
+              {shoe.releaseDate && (
+                <InfoCard label="출시일" value={formatDate(shoe.releaseDateExp)} />
+              )}
+            </div>
+
+            {/* Alternative Numbers */}
+            {shoe.alternativeModelNumbers && (
+              <div className="mb-6">
+                <p className="text-sm text-gray-500 mb-2">대체 모델 번호</p>
+                <p className="text-sm text-gray-300 bg-gray-900 rounded-lg p-3 font-mono">
+                  {shoe.alternativeModelNumbers}
+                </p>
+              </div>
+            )}
+
+            {/* Disciplines */}
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 mb-3">사용 가능 종목</p>
+              <div className="flex flex-wrap gap-2">
+                {shoe.disciplines.map((disc) => (
+                  <span
+                    key={disc.name}
+                    className="px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-sm"
+                  >
+                    {disc.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer Link */}
+            <div className="pt-4 border-t border-gray-800">
+              <a
+                href="https://certcheck.worldathletics.org/FullList"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-green-400 transition-colors"
+              >
+                <span>World Athletics에서 확인</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -163,11 +205,13 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
   );
 }
 
-function InfoItem({ label, value }: { label: string; value: string }) {
+function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-slate-700/50 p-3 rounded-lg">
-      <p className="text-xs text-gray-400 uppercase mb-1">{label}</p>
-      <p className="text-white font-medium">{value}</p>
+    <div className="bg-gray-900 rounded-xl p-3">
+      <p className="text-xs text-gray-500 mb-1">{label}</p>
+      <p className="text-sm text-white font-medium truncate" title={value}>
+        {value}
+      </p>
     </div>
   );
 }
