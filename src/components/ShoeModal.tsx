@@ -126,19 +126,17 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
           </div>
 
           {/* Content Section */}
-          <div className="lg:w-1/2 p-8 lg:p-10 overflow-y-auto">
+          <div className="lg:w-1/2 p-6 lg:p-8 overflow-y-auto">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <h2 id="modal-title" className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-                  {shoe.productName}
-                </h2>
-              </div>
-              <p className="text-zinc-500 text-lg">{shoe.shoeType}</p>
+            <div className="mb-6">
+              <h2 id="modal-title" className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-1">
+                {shoe.productName}
+              </h2>
+              <p className="text-zinc-500">{shoe.shoeType}</p>
             </div>
 
-            {/* Status Card */}
-            <div className={`${status.bg} ${status.border} border rounded-2xl p-5 mb-8`}>
+            {/* Status Card - 가장 중요한 정보 */}
+            <div className={`${status.bg} ${status.border} border rounded-2xl p-5 mb-6`}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">승인 상태</p>
@@ -163,7 +161,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
             </div>
 
             {/* Info Cards */}
-            <div className="grid grid-cols-2 gap-3 mb-8">
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <InfoCard label="모델 번호" value={shoe.modelNumber || '-'} />
               <InfoCard label="개발 신발" value={shoe.isDevelopmentShoe ? '예' : '아니오'} />
               <InfoCard
@@ -177,7 +175,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
 
             {/* Alternative Model Numbers */}
             {shoe.alternativeModelNumbers && (
-              <div className="mb-8">
+              <div className="mb-6">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">대체 모델 번호</p>
                 <div className="bg-black/30 rounded-xl p-4 border border-white/5">
                   <code className="text-sm text-zinc-300 font-mono break-all">
@@ -188,7 +186,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
             )}
 
             {/* Disciplines */}
-            <div className="mb-8">
+            <div className="mb-6">
               <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">
                 사용 가능 종목 ({shoe.disciplines.length})
               </p>

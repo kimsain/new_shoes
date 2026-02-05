@@ -214,7 +214,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   return (
     <>
       {/* Sticky Filter Bar */}
-      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-5 glass mb-12">
+      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 glass mb-8">
         <div className="flex flex-col gap-4">
           {/* Search and Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -393,7 +393,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       </div>
 
       {/* Results */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-zinc-500">
           <span className="text-white font-medium tabular-nums">{filteredShoes.length}</span>개 결과
           {filteredShoes.length !== shoes.length && (
@@ -404,9 +404,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
 
       {/* Newest Section */}
       {!hasActiveFilters && (
-        <section className="mb-14">
+        <section className="mb-10">
           <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger-children">
             {newestShoes.map((shoe) => (
               <ShoeCard
                 key={`newest-${shoe.productApplicationuuid}`}
@@ -421,10 +421,10 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
 
       {/* Brand Sections */}
       {sortedBrands.map((brand, idx) => (
-        <section key={brand} className="mb-14">
-          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-14" />}
+        <section key={brand} className="mb-10">
+          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-10" />}
           <SectionHeader title={brand} count={groupedShoes[brand].length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger-children">
             {groupedShoes[brand].map((shoe) => (
               <ShoeCard
                 key={shoe.productApplicationuuid}
@@ -542,16 +542,16 @@ function ActiveFilterBadge({ label, color }: { label: string; color: 'emerald' |
 
 function SectionHeader({ title, badge, count }: { title: string; badge?: string; count: number }) {
   return (
-    <div className="flex items-center gap-4 mb-6">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-2">
         {badge && (
-          <span className="px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
+          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
             {badge}
           </span>
         )}
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
       </div>
-      <span className="px-2.5 py-1 rounded-lg bg-white/[0.03] text-zinc-500 text-sm tabular-nums">
+      <span className="text-zinc-500 text-sm tabular-nums">
         {count}
       </span>
       <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />

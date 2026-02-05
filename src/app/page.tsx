@@ -77,7 +77,7 @@ export default async function Home() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-20 px-4 overflow-hidden">
+      <section className="relative pt-24 pb-12 px-4 overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-[100px]" />
@@ -97,25 +97,23 @@ export default async function Home() {
 
         <div className="relative max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.06] mb-8 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] mb-5 backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-sm text-zinc-400">World Athletics 데이터 실시간 동기화</span>
+            <span className="text-xs text-zinc-400">World Athletics 실시간 동기화</span>
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight leading-tight">
-            <span className="text-gradient">Development</span>
-            <br />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-tight leading-tight">
+            <span className="text-gradient">Development</span>{' '}
             <span className="text-emerald-400">Shoes</span>
           </h1>
 
           {/* Description */}
-          <p className="text-base sm:text-lg md:text-xl text-zinc-400 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
-            World Athletics 승인 대기 중인<br className="sm:hidden" /> 프로토타입 러닝화를<br className="hidden sm:block" />
-            한눈에 확인하세요
+          <p className="text-sm sm:text-base md:text-lg text-zinc-400 mb-6 max-w-xl mx-auto leading-relaxed">
+            World Athletics 승인 대기 중인 프로토타입 러닝화를 한눈에 확인하세요
           </p>
 
           {/* Stats */}
@@ -132,7 +130,7 @@ export default async function Home() {
       </section>
 
       {/* Gradient Transition */}
-      <div className="h-32 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]" />
+      <div className="h-16 bg-gradient-to-b from-transparent to-[#0a0a0a]" />
 
       {/* Main Content */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">

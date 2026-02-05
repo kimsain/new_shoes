@@ -99,16 +99,9 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
           </div>
         )}
 
-        {/* Status Badge - Top Right */}
-        <div className="absolute top-3 right-3">
-          <span className={`${status.bgColor} ${status.textColor} px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums backdrop-blur-sm`}>
-            {status.text}
-          </span>
-        </div>
-
         {/* Brand + New Badge - Top Left */}
         <div className="absolute top-3 left-3 flex items-center gap-2">
-          <span className="bg-black/40 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full text-xs font-medium">
+          <span className="bg-black/50 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full text-xs font-medium">
             {shoe.manufacturerName}
           </span>
           {isNew && (
@@ -123,31 +116,32 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        {/* Product Name */}
-        <h3 className="font-semibold text-white mb-1.5 line-clamp-1 group-hover:text-emerald-400 transition-colors duration-300">
-          {shoe.productName}
-        </h3>
-
-        {/* Type + Disciplines */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-zinc-400">{shoe.shoeType}</span>
-          <span className="text-zinc-600">·</span>
-          <span className="text-sm text-zinc-400">{shoe.disciplines.length}개 종목</span>
+      <div className="p-4">
+        {/* Top Row: Product Name + D-day */}
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="font-semibold text-white line-clamp-1 group-hover:text-emerald-400 transition-colors duration-300 flex-1">
+            {shoe.productName}
+          </h3>
+          <span className={`${status.bgColor} ${status.textColor} px-2 py-0.5 rounded-md text-xs font-bold tabular-nums whitespace-nowrap`}>
+            {status.text}
+          </span>
         </div>
 
-        {/* Footer - Disciplines preview */}
-        <div className="flex items-center gap-1.5 overflow-hidden">
+        {/* Type */}
+        <p className="text-sm text-zinc-500 mb-3">{shoe.shoeType}</p>
+
+        {/* Disciplines */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           {shoe.disciplines.slice(0, 2).map((disc) => (
             <span
               key={disc.name}
-              className="px-2 py-1 bg-zinc-800/80 text-zinc-300 rounded-md text-[11px] font-medium truncate border border-zinc-700/50"
+              className="px-2 py-1 bg-zinc-800/70 text-zinc-300 rounded-md text-xs truncate max-w-[120px]"
             >
               {disc.name}
             </span>
           ))}
           {shoe.disciplines.length > 2 && (
-            <span className="px-2 py-1 bg-zinc-800/50 text-zinc-500 rounded-md text-[11px] font-medium border border-zinc-700/30">
+            <span className="px-2 py-1 text-zinc-500 text-xs">
               +{shoe.disciplines.length - 2}
             </span>
           )}
