@@ -63,20 +63,13 @@ export default function Header() {
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors duration-300"
+            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors duration-300"
           >
-            <span>공식 사이트</span>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span className="hidden sm:inline">공식 사이트</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>
-
-          {/* Mobile menu button - can be expanded later */}
-          <button className="sm:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-all duration-200">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
       </div>
     </header>
