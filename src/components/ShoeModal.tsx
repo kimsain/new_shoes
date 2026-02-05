@@ -9,7 +9,7 @@ interface ShoeModalProps {
   onClose: () => void;
 }
 
-const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/api/ProductImage/';
+const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/OpenDocument/';
 
 function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return 'N/A';

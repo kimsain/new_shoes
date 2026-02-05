@@ -33,7 +33,7 @@ npm run lint    # Run ESLint
 - `ShoeModal` - Full details with image, dates, disciplines
 
 ### Image URLs
-Format: `https://certcheck.worldathletics.org/api/ProductImage/{imageDocumentuuid}`
+Format: `https://certcheck.worldathletics.org/OpenDocument/{imageDocumentuuid}`
 
 ## Deployment
 

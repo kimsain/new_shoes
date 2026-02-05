@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'certcheck.worldathletics.org',
-        pathname: '/api/ProductImage/**',
+        pathname: '/OpenDocument/**',
       },
     ],
   },
