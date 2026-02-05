@@ -127,6 +127,8 @@ Always use full class names from tokens.ts.
 - `.modal-stagger-1` to `.modal-stagger-6` - Staggered entrance for modal content
 - `.glow-orb`, `.glow-orb-1/2/3` - Hero section background orbs
 - `.animate-fade-in/out/up` - Fade animations
+- `.stagger-bounce` - Card grid sequential bounce entrance animation
+- `.btn-haptic` - Button touch feedback (scale on press)
 
 ### Accessibility
 - Focus-visible rings on all interactive elements
