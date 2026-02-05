@@ -63,12 +63,14 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/70 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         className="modal-content relative bg-zinc-900 rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-white/5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Close Button */}
         <button

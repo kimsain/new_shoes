@@ -235,7 +235,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-4 py-3 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
+                className={`px-4 py-3 rounded-xl border transition-all duration-300 flex items-center gap-2 btn-press ${
                   showAdvancedFilters || activeFilterCount > 0
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                     : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
@@ -474,7 +474,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${
+      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 btn-press ripple ${
         active
           ? colors[color]
           : 'bg-white/[0.03] text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-white'
