@@ -81,7 +81,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         const dateB = b.certificationStartDateExp ? new Date(b.certificationStartDateExp).getTime() : 0;
         return dateB - dateA;
       })
-      .slice(0, 4);
+      .slice(0, 3);
   }, [shoes]);
 
   const disciplinesWithCount = useMemo(() => {
