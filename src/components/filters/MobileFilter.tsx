@@ -27,10 +27,10 @@ interface MobileFilterProps {
 }
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string; color: FilterColor }[] = [
-  { value: 'all', label: '전체', color: 'zinc' },
-  { value: 'valid', label: '유효', color: 'emerald' },
-  { value: 'expiring', label: '만료임박', color: 'amber' },
-  { value: 'expired', label: '만료됨', color: 'red' },
+  { value: 'all', label: 'All', color: 'zinc' },
+  { value: 'valid', label: 'Valid', color: 'emerald' },
+  { value: 'expiring', label: 'Expiring', color: 'amber' },
+  { value: 'expired', label: 'Expired', color: 'red' },
 ];
 
 export default function MobileFilter({
@@ -49,9 +49,9 @@ export default function MobileFilter({
   clearAllFilters,
 }: MobileFilterProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Status */}
-      <FilterSection title="상태">
+      <FilterSection title="Status">
         {STATUS_OPTIONS.map(({ value, label, color }) => (
           <FilterChip
             key={value}
@@ -64,33 +64,33 @@ export default function MobileFilter({
       </FilterSection>
 
       {/* Brands */}
-      <FilterSection title="브랜드" count={selectedBrands.size}>
+      <FilterSection title="Brand" count={selectedBrands.size}>
         {brandsWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
             label={`${name} (${count})`}
             active={selectedBrands.has(name)}
             onClick={() => toggleBrand(name)}
-            color="emerald"
+            color="indigo"
           />
         ))}
       </FilterSection>
 
       {/* Disciplines */}
-      <FilterSection title="종목" count={selectedDisciplines.size}>
+      <FilterSection title="Discipline" count={selectedDisciplines.size}>
         {disciplinesWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
             label={`${getDisplayName(name)} (${count})`}
             active={selectedDisciplines.has(name)}
             onClick={() => toggleDiscipline(name)}
-            color="sky"
+            color="violet"
           />
         ))}
       </FilterSection>
 
       {/* Types */}
-      <FilterSection title="신발 유형" count={selectedTypes.size}>
+      <FilterSection title="Type" count={selectedTypes.size}>
         {typesWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
@@ -104,15 +104,15 @@ export default function MobileFilter({
 
       {/* Clear */}
       {activeFilterCount > 0 && (
-        <div className="pt-4 border-t border-white/[0.04]">
+        <div className="pt-4 border-t border-white/[0.06]">
           <button
             onClick={clearAllFilters}
-            className="flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 transition-all duration-200 btn-press"
+            className="flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium text-zinc-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-200"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            모든 필터 초기화
+            Clear all filters
           </button>
         </div>
       )}

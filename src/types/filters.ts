@@ -2,7 +2,7 @@ export type StatusFilter = 'all' | 'valid' | 'expiring' | 'expired';
 
 export type SortOption = 'newest' | 'expiring' | 'alphabetical';
 
-export type FilterColor = 'emerald' | 'sky' | 'violet' | 'amber' | 'red' | 'zinc';
+export type FilterColor = 'emerald' | 'sky' | 'violet' | 'amber' | 'red' | 'zinc' | 'indigo';
 
 export interface FilterState {
   selectedBrands: Set<string>;

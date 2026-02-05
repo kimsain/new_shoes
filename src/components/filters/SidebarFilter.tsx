@@ -2,7 +2,7 @@
 
 import { StatusFilter, CountedItem } from '@/types/filters';
 import { getDisplayName } from '@/utils/displayNames';
-import { FILTER, TEXT, BG, BUTTON, BORDER } from '@/styles/tokens';
+import { TEXT, BUTTON } from '@/styles/tokens';
 
 interface SidebarFilterProps {
   statusFilter: StatusFilter;
@@ -20,32 +20,12 @@ interface SidebarFilterProps {
   clearAllFilters: () => void;
 }
 
-// 상태 필터 옵션 (Tailwind JIT를 위해 전체 클래스 명시)
+// 상태 필터 옵션
 const STATUS_OPTIONS = [
-  {
-    value: 'all' as const,
-    label: '전체',
-    active: { bg: 'bg-zinc-700', text: 'text-white', dot: 'bg-white' },
-    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
-  },
-  {
-    value: 'valid' as const,
-    label: '유효',
-    active: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
-  },
-  {
-    value: 'expiring' as const,
-    label: '만료 임박',
-    active: { bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
-    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
-  },
-  {
-    value: 'expired' as const,
-    label: '만료됨',
-    active: { bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
-    inactive: { bg: '', text: 'text-zinc-400', dot: 'bg-zinc-600' },
-  },
+  { value: 'all' as const, label: 'All' },
+  { value: 'valid' as const, label: 'Valid' },
+  { value: 'expiring' as const, label: 'Soon' },
+  { value: 'expired' as const, label: 'Expired' },
 ];
 
 export default function SidebarFilter({
@@ -64,169 +44,146 @@ export default function SidebarFilter({
   clearAllFilters,
 }: SidebarFilterProps) {
   return (
-    <div className="space-y-6">
-      {/* Status */}
-      <FilterGroup title="승인 상태">
-        <div className="space-y-1">
-          {STATUS_OPTIONS.map(({ value, label, active, inactive }) => {
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500">
+          Filters
+        </h3>
+        {activeFilterCount > 0 && (
+          <span className="text-xs text-indigo-400">{activeFilterCount} active</span>
+        )}
+      </div>
+
+      {/* Status - Segment Control */}
+      <FilterSection title="Status">
+        <div className="segment-control">
+          {STATUS_OPTIONS.map(({ value, label }) => {
             const isActive = statusFilter === value;
-            const colors = isActive ? active : inactive;
             return (
               <button
                 key={value}
                 onClick={() => setStatusFilter(value)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-                  isActive ? `${colors.bg} ${colors.text}` : `${colors.text} hover:bg-white/5 hover:text-white`
-                }`}
+                className={`segment-item ${isActive ? 'active' : ''}`}
               >
-                <span className={`w-2 h-2 rounded-full ${colors.dot}`} />
                 {label}
               </button>
             );
           })}
         </div>
-      </FilterGroup>
+      </FilterSection>
 
-      {/* Brands */}
-      <FilterGroup
-        title="브랜드"
+      {/* Brands - Toggle Chips Grid */}
+      <FilterSection
+        title="Brand"
         selectedCount={selectedBrands.size}
-        selectedColor="text-emerald-400"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {brandsWithCount.map(({ name, count }) => {
+            const isActive = selectedBrands.has(name);
+            return (
+              <button
+                key={name}
+                onClick={() => toggleBrand(name)}
+                className={`toggle-chip ${isActive ? 'active' : ''}`}
+              >
+                <span className="truncate">{name}</span>
+                <span className="text-[10px] text-zinc-600">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </FilterSection>
+
+      {/* Disciplines - Collapsible List */}
+      <FilterSection
+        title="Discipline"
+        selectedCount={selectedDisciplines.size}
       >
         <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1 scrollbar-thin">
-          {brandsWithCount.map(({ name, count }) => (
-            <CheckboxItem
-              key={name}
-              label={name}
-              count={count}
-              checked={selectedBrands.has(name)}
-              onClick={() => toggleBrand(name)}
-              colors={FILTER.brand}
-            />
-          ))}
+          {disciplinesWithCount.map(({ name, count }) => {
+            const isActive = selectedDisciplines.has(name);
+            return (
+              <button
+                key={name}
+                onClick={() => toggleDiscipline(name)}
+                className={`filter-list-item ${isActive ? 'active' : ''}`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-violet-400' : 'bg-zinc-600'}`} />
+                  <span className="truncate">{getDisplayName(name)}</span>
+                </span>
+                <span className="text-[10px] text-zinc-600 flex-shrink-0">{count}</span>
+              </button>
+            );
+          })}
         </div>
-      </FilterGroup>
+      </FilterSection>
 
-      {/* Disciplines */}
-      <FilterGroup
-        title="종목"
-        selectedCount={selectedDisciplines.size}
-        selectedColor="text-sky-400"
-      >
-        <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
-          {disciplinesWithCount.map(({ name, count }) => (
-            <CheckboxItem
-              key={name}
-              label={getDisplayName(name)}
-              count={count}
-              checked={selectedDisciplines.has(name)}
-              onClick={() => toggleDiscipline(name)}
-              colors={FILTER.discipline}
-            />
-          ))}
-        </div>
-      </FilterGroup>
-
-      {/* Types */}
-      <FilterGroup
-        title="신발 유형"
+      {/* Types - Toggle Chips */}
+      <FilterSection
+        title="Type"
         selectedCount={selectedTypes.size}
-        selectedColor="text-violet-400"
       >
         <div className="space-y-1">
-          {typesWithCount.map(({ name, count }) => (
-            <CheckboxItem
-              key={name}
-              label={name}
-              count={count}
-              checked={selectedTypes.has(name)}
-              onClick={() => toggleType(name)}
-              colors={FILTER.type}
-            />
-          ))}
+          {typesWithCount.map(({ name, count }) => {
+            const isActive = selectedTypes.has(name);
+            return (
+              <button
+                key={name}
+                onClick={() => toggleType(name)}
+                className={`filter-list-item ${isActive ? 'active' : ''}`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-purple-400' : 'bg-zinc-600'}`} />
+                  <span className="truncate">{name}</span>
+                </span>
+                <span className="text-[10px] text-zinc-600 flex-shrink-0">{count}</span>
+              </button>
+            );
+          })}
         </div>
-      </FilterGroup>
+      </FilterSection>
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
       {/* Clear All */}
       {activeFilterCount > 0 && (
         <button
           onClick={clearAllFilters}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm ${BUTTON.danger.text} ${BUTTON.danger.bgHover} border ${BUTTON.danger.border} transition-all`}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} ${BUTTON.secondary.text} ${BUTTON.secondary.hover} transition-all`}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          필터 초기화
+          Clear all
         </button>
       )}
     </div>
   );
 }
 
-function FilterGroup({
+function FilterSection({
   title,
   selectedCount,
-  selectedColor,
   children,
 }: {
   title: string;
   selectedCount?: number;
-  selectedColor?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className={`text-xs font-semibold ${TEXT.tertiary} uppercase tracking-wider`}>{title}</h4>
+        <h4 className={`text-[11px] font-medium uppercase tracking-[0.05em] ${TEXT.muted}`}>
+          {title}
+        </h4>
         {selectedCount !== undefined && selectedCount > 0 && (
-          <span className={`text-xs ${selectedColor}`}>{selectedCount}개 선택</span>
+          <span className="text-[10px] text-indigo-400">{selectedCount}</span>
         )}
       </div>
       {children}
     </div>
-  );
-}
-
-interface FilterColors {
-  active: { bg: string; text: string; checkbox: string };
-  inactive: { bg: string; text: string; checkbox: string };
-}
-
-function CheckboxItem({
-  label,
-  count,
-  checked,
-  onClick,
-  colors,
-}: {
-  label: string;
-  count: number;
-  checked: boolean;
-  onClick: () => void;
-  colors: FilterColors;
-}) {
-  const style = checked ? colors.active : colors.inactive;
-
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${style.bg} ${style.text} ${
-        !checked ? 'hover:bg-white/5 hover:text-white' : ''
-      }`}
-    >
-      <span className="flex items-center gap-2 min-w-0">
-        <span
-          className={`w-4 h-4 flex-shrink-0 rounded border flex items-center justify-center ${style.checkbox}`}
-        >
-          {checked && (
-            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </span>
-        <span className="break-words text-left">{label}</span>
-      </span>
-      <span className={`text-xs ${TEXT.disabled} flex-shrink-0 ml-2`}>{count}</span>
-    </button>
   );
 }

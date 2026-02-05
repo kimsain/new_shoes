@@ -8,17 +8,14 @@ export default async function Home() {
   const lastUpdated = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a]">
+    <main className="min-h-screen bg-black">
       <Header />
 
       {/* Hero Section */}
       <HeroSection stats={stats} />
 
-      {/* Gradient Transition */}
-      <div className="h-16 bg-gradient-to-b from-transparent to-[#0a0a0a]" />
-
       {/* Main Content */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-32">
         {shoes.length === 0 ? (
           <EmptyDataState />
         ) : (
@@ -27,7 +24,7 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <Footer lastUpdated={lastUpdated} />
+      <Footer lastUpdated={lastUpdated} stats={stats} />
     </main>
   );
 }
@@ -35,67 +32,63 @@ export default async function Home() {
 // Hero Section Component
 function HeroSection({ stats }: { stats: { total: number; brandCount: number; disciplineCount: number } }) {
   return (
-    <section className="relative pt-24 pb-12 px-4 overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-[100px]" />
-        <div className="absolute top-20 left-1/4 w-[400px] h-[400px] bg-sky-500/[0.05] rounded-full blur-[80px]" />
-        <div className="absolute top-40 right-1/4 w-[300px] h-[300px] bg-purple-500/[0.05] rounded-full blur-[80px]" />
+    <section className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 px-4 overflow-hidden">
+      {/* Glow Orbs Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Orb 1 - Indigo (largest) */}
+        <div className="glow-orb-1" />
+        {/* Orb 2 - Violet */}
+        <div className="glow-orb-2" />
+        {/* Orb 3 - Cyan */}
+        <div className="glow-orb-3" />
       </div>
 
-      {/* Grid pattern overlay */}
+      {/* Subtle grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
                            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '64px 64px',
+          backgroundSize: '80px 80px',
         }}
       />
 
-      <div className="relative max-w-4xl mx-auto text-center">
+      <div className="relative max-w-5xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] mb-5 backdrop-blur-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+        <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/30 mb-8 backdrop-blur-sm">
+          <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-indigo-300">
+            ✦ Development Shoes
           </span>
-          <span className="text-xs text-zinc-400">World Athletics 실시간 동기화</span>
         </div>
 
-        {/* Title */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-tight leading-tight">
-          <span className="text-gradient">Development</span>{' '}
-          <span className="text-emerald-400">Shoes</span>
+        {/* Title - Two lines */}
+        <h1 className="hero-title mb-6">
+          <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white tracking-[-0.04em] leading-[1.1]">
+            The Future of
+          </span>
+          <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-[-0.04em] leading-[1.1] bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+            Running Shoes
+          </span>
         </h1>
 
         {/* Description */}
-        <p className="text-sm sm:text-base md:text-lg text-zinc-400 mb-6 max-w-xl mx-auto leading-relaxed">
-          World Athletics 승인 대기 중인 프로토타입 러닝화를 한눈에 확인하세요
+        <p className="hero-description text-base sm:text-lg text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          World Athletics 승인 대기 중인 프로토타입을 실시간으로 추적하세요
         </p>
 
-        {/* Stats */}
-        <div className="inline-flex items-center gap-1 p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-          <StatItem value={stats.total} label="신발" />
-          <div className="w-px h-8 bg-white/10" />
-          <StatItem value={stats.brandCount} label="브랜드" />
-          <div className="w-px h-8 bg-white/10" />
-          <StatItem value={stats.disciplineCount} label="종목" />
-          <div className="w-px h-8 bg-white/10" />
-          <StatItem value="1h" label="갱신" />
+        {/* Minimal Stats */}
+        <div className="hero-stats inline-flex items-center gap-2 text-sm text-zinc-500">
+          <span className="text-white font-semibold tabular-nums">{stats.total}</span>
+          <span>shoes</span>
+          <span className="text-zinc-600">·</span>
+          <span className="text-white font-semibold tabular-nums">{stats.brandCount}</span>
+          <span>brands</span>
         </div>
       </div>
-    </section>
-  );
-}
 
-// Stat Item Component
-function StatItem({ value, label }: { value: string | number; label: string }) {
-  return (
-    <div className="px-5 py-2 text-center">
-      <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
-      <p className="text-xs text-zinc-500">{label}</p>
-    </div>
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+    </section>
   );
 }
 
@@ -120,50 +113,63 @@ function EmptyDataState() {
 }
 
 // Footer Component
-function Footer({ lastUpdated }: { lastUpdated: string }) {
+function Footer({ lastUpdated, stats }: { lastUpdated: string; stats: { total: number; brandCount: number } }) {
   return (
-    <footer className="border-t border-white/[0.04] py-10 px-4 bg-black/20">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-white">DevShoes</span>
-              <p className="text-xs text-zinc-500">마지막 업데이트: {lastUpdated}</p>
-            </div>
-          </div>
+    <footer className="relative pt-16 pb-12 px-4">
+      {/* Glow gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
 
+      <div className="max-w-[1400px] mx-auto">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-4">
+            Development Shoes
+          </p>
+
+          {/* Status */}
+          <div className="inline-flex items-center gap-2 text-sm text-zinc-500 mb-6">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              Synced
+            </span>
+            <span className="text-zinc-700">·</span>
+            <span>{stats.total} shoes</span>
+            <span className="text-zinc-700">·</span>
+            <span>Updated {lastUpdated}</span>
+          </div>
+        </div>
+
+        {/* Links */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+          <a
+            href="https://github.com/kimsain/new_shoes"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-sm text-zinc-400 hover:text-white hover:border-white/[0.12] transition-all duration-300"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z" />
+            </svg>
+            GitHub
+          </a>
           <a
             href="https://certcheck.worldathletics.org/FullList"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.06] text-sm text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-sm text-zinc-400 hover:text-white hover:border-white/[0.12] transition-all duration-300"
           >
-            <span>World Athletics 공식 사이트</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
+            Source Data
           </a>
         </div>
 
-        <p className="text-center text-xs text-zinc-600 max-w-2xl mx-auto leading-relaxed">
-          Development Shoes는 지정된 기간 내에만 사용 가능하며, World Athletics Series Events 또는 Olympic
-          Games에서는 사용할 수 없습니다.
+        {/* Disclaimer */}
+        <p className="text-center text-xs text-zinc-600 max-w-xl mx-auto leading-relaxed">
+          Development shoes are prototypes awaiting World Athletics approval.
+          <br />
+          Not permitted in WAS Events or Olympic Games.
         </p>
       </div>
     </footer>
