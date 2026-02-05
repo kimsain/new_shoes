@@ -45,8 +45,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  // Desktop: inline filter panel
-  const [showDesktopFilters, setShowDesktopFilters] = useState(false);
   // Mobile: bottom sheet
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -226,8 +224,165 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     setSearchInput('');
   };
 
-  // Filter content (shared between desktop and mobile)
-  const FilterContent = () => (
+  // Sidebar Filter Content (Desktop)
+  const SidebarFilterContent = () => (
+    <div className="space-y-6">
+      {/* Status */}
+      <div>
+        <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">승인 상태</h4>
+        <div className="space-y-1">
+          {[
+            { value: 'all', label: '전체', color: 'zinc' },
+            { value: 'valid', label: '유효', color: 'emerald' },
+            { value: 'expiring', label: '만료 임박', color: 'amber' },
+            { value: 'expired', label: '만료됨', color: 'red' },
+          ].map(({ value, label, color }) => (
+            <button
+              key={value}
+              onClick={() => setStatusFilter(value as StatusFilter)}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                statusFilter === value
+                  ? `bg-${color}-500/15 text-${color}-400`
+                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${
+                statusFilter === value ? `bg-${color}-400` : 'bg-zinc-600'
+              }`} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Brands */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">브랜드</h4>
+          {selectedBrands.size > 0 && (
+            <span className="text-xs text-emerald-400">{selectedBrands.size}개 선택</span>
+          )}
+        </div>
+        <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1 scrollbar-thin">
+          {brandsWithCount.map(({ name, count }) => (
+            <button
+              key={name}
+              onClick={() => toggleBrand(name)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                selectedBrands.has(name)
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+                  selectedBrands.has(name) ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
+                }`}>
+                  {selectedBrands.has(name) && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                {name}
+              </span>
+              <span className="text-xs text-zinc-600">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Disciplines */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">종목</h4>
+          {selectedDisciplines.size > 0 && (
+            <span className="text-xs text-sky-400">{selectedDisciplines.size}개 선택</span>
+          )}
+        </div>
+        <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
+          {disciplinesWithCount.map(({ name, count }) => (
+            <button
+              key={name}
+              onClick={() => toggleDiscipline(name)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                selectedDisciplines.has(name)
+                  ? 'bg-sky-500/15 text-sky-400'
+                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+                  selectedDisciplines.has(name) ? 'bg-sky-500 border-sky-500' : 'border-zinc-600'
+                }`}>
+                  {selectedDisciplines.has(name) && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                <span className="truncate">{name}</span>
+              </span>
+              <span className="text-xs text-zinc-600 ml-2">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Types */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">신발 유형</h4>
+          {selectedTypes.size > 0 && (
+            <span className="text-xs text-violet-400">{selectedTypes.size}개 선택</span>
+          )}
+        </div>
+        <div className="space-y-1">
+          {typesWithCount.map(({ name, count }) => (
+            <button
+              key={name}
+              onClick={() => toggleType(name)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+                selectedTypes.has(name)
+                  ? 'bg-violet-500/15 text-violet-400'
+                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-4 h-4 rounded border flex items-center justify-center ${
+                  selectedTypes.has(name) ? 'bg-violet-500 border-violet-500' : 'border-zinc-600'
+                }`}>
+                  {selectedTypes.has(name) && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                {name}
+              </span>
+              <span className="text-xs text-zinc-600">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Clear All */}
+      {activeFilterCount > 0 && (
+        <button
+          onClick={clearAllFilters}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-all"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          필터 초기화
+        </button>
+      )}
+    </div>
+  );
+
+  // Mobile Filter Content (Bottom Sheet)
+  const MobileFilterContent = () => (
     <div className="space-y-5">
       {/* Status */}
       <FilterSection title="상태">
@@ -303,12 +458,169 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
     </div>
   );
 
+  // Main content (shared between layouts)
+  const MainContent = () => (
+    <>
+      {/* Results count */}
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-sm text-zinc-500">
+          <span className="text-white font-medium tabular-nums">{filteredShoes.length}</span>개 결과
+          {filteredShoes.length !== shoes.length && (
+            <span className="text-zinc-600 ml-1">/ 전체 {shoes.length}</span>
+          )}
+        </p>
+      </div>
+
+      {/* Newest Section */}
+      {!hasActiveFilters && (
+        <section className="mb-10">
+          <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
+            {newestShoes.map((shoe) => (
+              <ShoeCard
+                key={`newest-${shoe.productApplicationuuid}`}
+                shoe={shoe}
+                onClick={() => setSelectedShoe(shoe)}
+                isNew
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Brand Sections */}
+      {sortedBrands.map((brand, idx) => (
+        <section key={brand} className="mb-10">
+          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-10" />}
+          <SectionHeader title={brand} count={groupedShoes[brand].length} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
+            {groupedShoes[brand].map((shoe) => (
+              <ShoeCard
+                key={shoe.productApplicationuuid}
+                shoe={shoe}
+                onClick={() => setSelectedShoe(shoe)}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      {/* Empty State */}
+      {filteredShoes.length === 0 && (
+        <div className="text-center py-24 animate-fade-in">
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-white/[0.04]" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-12 h-12 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">검색 결과가 없습니다</h3>
+          <p className="text-zinc-400 mb-2 max-w-sm mx-auto">
+            조건에 맞는 신발을 찾을 수 없어요
+          </p>
+          <p className="text-zinc-500 text-sm mb-8">
+            다른 키워드로 검색하거나 필터를 조정해보세요
+          </p>
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="px-6 py-3 min-h-[48px] rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 active:scale-[0.98] transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
+            >
+              필터 초기화하기
+            </button>
+          )}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
-      {/* Sticky Search Bar */}
-      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 glass mb-6">
-        <div className="flex flex-col gap-3">
-          {/* Search and Controls */}
+      {/* Desktop Layout (lg+): Sidebar + Main */}
+      <div className="hidden lg:flex gap-8">
+        {/* Sidebar */}
+        <aside className="w-64 flex-shrink-0">
+          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] p-5 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold text-white">필터</h3>
+              {activeFilterCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-medium">
+                  {activeFilterCount}
+                </span>
+              )}
+            </div>
+            <SidebarFilterContent />
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          {/* Search Bar */}
+          <div className="sticky top-16 z-40 -mx-4 px-4 py-3 glass mb-6">
+            <div className="flex gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                {isSearching ? (
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4">
+                    <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+                <input
+                  type="text"
+                  placeholder="신발명, 브랜드, 모델번호 검색..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300 text-sm"
+                />
+                {searchInput && (
+                  <button
+                    onClick={() => {
+                      setSearchInput('');
+                      setSearchQuery('');
+                      setIsSearching(false);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                    aria-label="검색어 지우기"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'newest' | 'expiring' | 'alphabetical')}
+                className="px-4 py-2.5 rounded-xl bg-white/[0.03] text-white border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 text-sm cursor-pointer"
+              >
+                <option value="newest">최신순</option>
+                <option value="expiring">만료임박순</option>
+                <option value="alphabetical">이름순</option>
+              </select>
+            </div>
+          </div>
+
+          <MainContent />
+        </main>
+      </div>
+
+      {/* Mobile/Tablet Layout (< lg): Top bar + Bottom sheet */}
+      <div className="lg:hidden">
+        {/* Sticky Search Bar */}
+        <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 glass mb-6">
           <div className="flex gap-2">
             {/* Search */}
             <div className="relative flex-1">
@@ -350,18 +662,11 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               )}
             </div>
 
-            {/* Filter Button - Mobile: opens bottom sheet, Desktop: toggles inline */}
+            {/* Filter Button */}
             <button
-              onClick={() => {
-                // Check if mobile (< md breakpoint = 768px)
-                if (window.innerWidth < 768) {
-                  setShowMobileFilters(true);
-                } else {
-                  setShowDesktopFilters(!showDesktopFilters);
-                }
-              }}
+              onClick={() => setShowMobileFilters(true)}
               className={`px-3 py-2.5 min-h-[44px] rounded-xl border transition-all duration-300 flex items-center gap-2 btn-press ${
-                showDesktopFilters || activeFilterCount > 0
+                activeFilterCount > 0
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                   : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
               }`}
@@ -369,7 +674,6 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              <span className="hidden sm:inline text-sm">필터</span>
               {activeFilterCount > 0 && (
                 <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
                   {activeFilterCount}
@@ -389,16 +693,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             </select>
           </div>
 
-          {/* Desktop: Inline Advanced Filters */}
-          {showDesktopFilters && (
-            <div className="hidden md:block animate-fade-in bg-black/20 rounded-2xl p-5 border border-white/[0.04]">
-              <FilterContent />
-            </div>
-          )}
-
-          {/* Active Filters Summary (when filters closed) */}
-          {!showDesktopFilters && hasActiveFilters && (
-            <div className="flex items-center gap-2 flex-wrap">
+          {/* Active Filters Summary */}
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2 flex-wrap mt-3">
               <span className="text-xs text-zinc-600">활성:</span>
               {selectedBrands.size > 0 && <ActiveFilterBadge label={`브랜드 ${selectedBrands.size}`} color="emerald" />}
               {selectedDisciplines.size > 0 && <ActiveFilterBadge label={`종목 ${selectedDisciplines.size}`} color="sky" />}
@@ -418,130 +715,56 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             </div>
           )}
         </div>
+
+        {/* Mobile Bottom Sheet */}
+        {showMobileFilters && (
+          <div className="fixed inset-0 z-50">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+              onClick={() => setShowMobileFilters(false)}
+            />
+
+            {/* Bottom Sheet */}
+            <div className="absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-3xl border-t border-white/10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
+              {/* Drag Handle */}
+              <div className="flex justify-center py-3">
+                <div className="w-10 h-1 rounded-full bg-zinc-600" />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.06]">
+                <h3 className="text-lg font-semibold text-white">필터</h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto overscroll-contain p-5">
+                <MobileFilterContent />
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-white/[0.06] bg-zinc-900/95 backdrop-blur-sm">
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="w-full py-3.5 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 active:scale-[0.98] transition-all"
+                >
+                  {filteredShoes.length}개 결과 보기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <MainContent />
       </div>
-
-      {/* Mobile Bottom Sheet */}
-      {showMobileFilters && (
-        <div className="md:hidden fixed inset-0 z-50">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setShowMobileFilters(false)}
-          />
-
-          {/* Bottom Sheet */}
-          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-3xl border-t border-white/10 animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
-            {/* Drag Handle */}
-            <div className="flex justify-center py-3">
-              <div className="w-10 h-1 rounded-full bg-zinc-600" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pb-4 border-b border-white/[0.06]">
-              <h3 className="text-lg font-semibold text-white">필터</h3>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain p-5">
-              <FilterContent />
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-white/[0.06] bg-zinc-900/95 backdrop-blur-sm">
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="w-full py-3.5 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 active:scale-[0.98] transition-all"
-              >
-                {filteredShoes.length}개 결과 보기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Results */}
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-zinc-500">
-          <span className="text-white font-medium tabular-nums">{filteredShoes.length}</span>개 결과
-          {filteredShoes.length !== shoes.length && (
-            <span className="text-zinc-600 ml-1">/ 전체 {shoes.length}</span>
-          )}
-        </p>
-      </div>
-
-      {/* Newest Section */}
-      {!hasActiveFilters && (
-        <section className="mb-10">
-          <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger-children">
-            {newestShoes.map((shoe) => (
-              <ShoeCard
-                key={`newest-${shoe.productApplicationuuid}`}
-                shoe={shoe}
-                onClick={() => setSelectedShoe(shoe)}
-                isNew
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Brand Sections */}
-      {sortedBrands.map((brand, idx) => (
-        <section key={brand} className="mb-10">
-          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-10" />}
-          <SectionHeader title={brand} count={groupedShoes[brand].length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 stagger-children">
-            {groupedShoes[brand].map((shoe) => (
-              <ShoeCard
-                key={shoe.productApplicationuuid}
-                shoe={shoe}
-                onClick={() => setSelectedShoe(shoe)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {/* Empty State */}
-      {filteredShoes.length === 0 && (
-        <div className="text-center py-24 animate-fade-in">
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-white/[0.04]" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg className="w-12 h-12 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-zinc-800 border border-white/[0.06] flex items-center justify-center">
-              <span className="text-lg">🔍</span>
-            </div>
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">검색 결과가 없습니다</h3>
-          <p className="text-zinc-400 mb-2 max-w-sm mx-auto">
-            조건에 맞는 신발을 찾을 수 없어요
-          </p>
-          <p className="text-zinc-500 text-sm mb-8">
-            다른 키워드로 검색하거나 필터를 조정해보세요
-          </p>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="px-6 py-3 min-h-[48px] rounded-xl bg-emerald-500 text-white font-medium hover:bg-emerald-600 active:scale-[0.98] transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
-            >
-              필터 초기화하기
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Modal */}
       {selectedShoe && (
