@@ -1,9 +1,11 @@
 'use client';
 
-import { Shoe } from '@/types/shoe';
-import { getDisplayName } from '@/utils/displayNames';
-import Image from 'next/image';
 import { useState } from 'react';
+import Image from 'next/image';
+import { Shoe } from '@/types/shoe';
+import { IMAGE_BASE_URL } from '@/constants';
+import { getStatusInfo } from '@/utils/date';
+import { getDisplayName } from '@/utils/displayNames';
 
 interface ShoeCardProps {
   shoe: Shoe;
@@ -11,38 +13,10 @@ interface ShoeCardProps {
   isNew?: boolean;
 }
 
-const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/OpenDocument/';
-
-function getRemainingDays(endDateStr: string | undefined): number | null {
-  if (!endDateStr) return null;
-  const endDate = new Date(endDateStr);
-  const today = new Date();
-  const diffTime = endDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
 export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
-
-  const getStatusInfo = () => {
-    if (remainingDays === null) {
-      return { text: '기간 미정', bgColor: 'bg-zinc-800', textColor: 'text-zinc-400' };
-    }
-    if (remainingDays <= 0) {
-      return { text: '만료', bgColor: 'bg-red-500/15', textColor: 'text-red-400' };
-    }
-    if (remainingDays <= 30) {
-      return { text: `D-${remainingDays}`, bgColor: 'bg-amber-500/15', textColor: 'text-amber-400' };
-    }
-    if (remainingDays <= 90) {
-      return { text: `D-${remainingDays}`, bgColor: 'bg-sky-500/15', textColor: 'text-sky-400' };
-    }
-    return { text: `D-${remainingDays}`, bgColor: 'bg-emerald-500/15', textColor: 'text-emerald-400' };
-  };
-
-  const status = getStatusInfo();
+  const status = getStatusInfo(shoe.certificationEndDateExp);
 
   return (
     <article
@@ -70,9 +44,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
             src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
             alt={shoe.productName}
             fill
-            className={`object-contain p-6 img-zoom ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`object-contain p-6 img-zoom ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
             unoptimized
@@ -123,7 +95,9 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
           <h3 className="font-semibold text-white line-clamp-2 break-words group-hover:text-emerald-400 transition-colors duration-300 flex-1">
             {shoe.productName}
           </h3>
-          <span className={`${status.bgColor} ${status.textColor} px-2 py-0.5 rounded-md text-xs font-bold tabular-nums whitespace-nowrap`}>
+          <span
+            className={`${status.colors.bg} ${status.colors.text} px-2 py-0.5 rounded-md text-xs font-bold tabular-nums whitespace-nowrap`}
+          >
             {status.text}
           </span>
         </div>

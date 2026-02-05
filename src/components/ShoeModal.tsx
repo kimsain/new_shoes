@@ -1,39 +1,21 @@
 'use client';
 
-import { Shoe } from '@/types/shoe';
-import { getDisplayName } from '@/utils/displayNames';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Shoe } from '@/types/shoe';
+import { IMAGE_BASE_URL } from '@/constants';
+import { formatDate, getDetailedStatusInfo } from '@/utils/date';
+import { getDisplayName } from '@/utils/displayNames';
 
 interface ShoeModalProps {
   shoe: Shoe;
   onClose: () => void;
 }
 
-const IMAGE_BASE_URL = 'https://certcheck.worldathletics.org/OpenDocument/';
-
-function formatDate(dateStr: string | undefined): string {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
-function getRemainingDays(endDateStr: string | undefined): number | null {
-  if (!endDateStr) return null;
-  const endDate = new Date(endDateStr);
-  const today = new Date();
-  const diffTime = endDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
 export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
+  const status = getDetailedStatusInfo(shoe.certificationEndDateExp);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -46,24 +28,6 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
       document.body.style.overflow = 'unset';
     };
   }, [onClose]);
-
-  const getStatusInfo = () => {
-    if (remainingDays === null) {
-      return { text: '기간 미정', color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/20' };
-    }
-    if (remainingDays <= 0) {
-      return { text: '승인 기간 만료', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' };
-    }
-    if (remainingDays <= 30) {
-      return { text: `만료까지 ${remainingDays}일`, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
-    }
-    if (remainingDays <= 90) {
-      return { text: `만료까지 ${remainingDays}일`, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' };
-    }
-    return { text: `만료까지 ${remainingDays}일`, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
-  };
-
-  const status = getStatusInfo();
 
   return (
     <div
@@ -111,7 +75,12 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
               <div className="text-center">
                 <div className="w-24 h-24 mx-auto rounded-3xl bg-zinc-800/50 flex items-center justify-center mb-4">
                   <svg className="w-12 h-12 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
                 <p className="text-zinc-600 text-sm">이미지를 불러올 수 없습니다</p>
@@ -136,16 +105,18 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
               <p className="text-zinc-500">{shoe.shoeType}</p>
             </div>
 
-            {/* Status Card - 가장 중요한 정보 */}
+            {/* Status Card */}
             <div className={`${status.bg} ${status.border} border rounded-2xl p-5 mb-6`}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">승인 상태</p>
                   <p className={`text-lg font-semibold ${status.color}`}>{status.text}</p>
                 </div>
-                {remainingDays !== null && remainingDays > 0 && (
+                {status.remainingDays !== null && status.remainingDays > 0 && (
                   <div className="text-right">
-                    <p className={`text-4xl font-bold tabular-nums ${status.color}`}>D-{remainingDays}</p>
+                    <p className={`text-4xl font-bold tabular-nums ${status.color}`}>
+                      D-{status.remainingDays}
+                    </p>
                   </div>
                 )}
               </div>
@@ -153,9 +124,16 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
                 <div className="mt-4 pt-4 border-t border-white/5">
                   <div className="flex items-center gap-3 text-sm text-zinc-400">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
                     </svg>
-                    <span>{formatDate(shoe.certificationStartDateExp)} ~ {formatDate(shoe.certificationEndDateExp)}</span>
+                    <span>
+                      {formatDate(shoe.certificationStartDateExp)} ~ {formatDate(shoe.certificationEndDateExp)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -169,9 +147,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
                 label="승인 상태"
                 value={shoe.status === 'APPROVED_UNTIL' ? '기간 한정 승인' : '정식 승인'}
               />
-              {shoe.releaseDate && (
-                <InfoCard label="출시일" value={formatDate(shoe.releaseDateExp)} />
-              )}
+              {shoe.releaseDate && <InfoCard label="출시일" value={formatDate(shoe.releaseDateExp)} />}
             </div>
 
             {/* Alternative Model Numbers */}
@@ -213,7 +189,12 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
               >
                 <span>World Athletics 공식 페이지에서 확인</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
               </a>
             </div>
