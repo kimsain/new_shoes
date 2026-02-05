@@ -438,6 +438,50 @@ body {
 }
 
 /* ============================================
+   STAGGER BOUNCE (Card Grid Animation)
+   ============================================ */
+
+@keyframes stagger-bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  60% {
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stagger-bounce > * {
+  animation: stagger-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+.stagger-bounce > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-bounce > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-bounce > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-bounce > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-bounce > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-bounce > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-bounce > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-bounce > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-bounce > *:nth-child(9) { animation-delay: 0.45s; }
+
+/* ============================================
+   BUTTON HAPTIC FEEDBACK
+   ============================================ */
+
+.btn-haptic {
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-haptic:active {
+  transform: scale(0.97);
+}
+
+/* ============================================
    ACCESSIBILITY
    ============================================ */
 
