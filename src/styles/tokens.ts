@@ -371,11 +371,9 @@ export const GLOW_LINE = {
 export const ANIMATION = {
   fadeIn: 'animate-fade-in',
   fadeUp: 'animate-fade-up',
-  scaleIn: 'animate-scale-in',
+  fadeOut: 'animate-fade-out',
   slideUp: 'animate-slide-up',
-  glow: 'animate-glow',
-  float: 'animate-float',
-  shimmer: 'animate-shimmer',
+  slideInBottom: 'animate-slide-in-bottom',
 } as const;
 
 // ============================================
@@ -444,22 +442,3 @@ export const UTILS = {
 } as const;
 
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-export function getStatusColors(level: StatusLevel) {
-  return STATUS[level];
-}
-
-export function cn(...classes: (string | undefined | false)[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
-export function getFilterColors(
-  category: 'brand' | 'discipline' | 'type',
-  isActive: boolean
-) {
-  const colors = FILTER[category];
-  return isActive ? colors.active : colors.inactive;
-}

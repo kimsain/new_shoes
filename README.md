@@ -39,7 +39,7 @@ Inspired by **Linear** and **Vercel** - featuring a pure black background, indig
 ### UX
 - **Keyboard Navigation** - Arrow keys for modal navigation, ESC to close
 - **Image Zoom** - Click to view full-size images
-- **⌘K Search** - Command palette style search bar
+- **Smart Search** - Debounced search with custom dropdown
 - **Blur-to-Sharp Loading** - Smooth image transitions
 
 ### Animations
@@ -96,20 +96,22 @@ src/
 │   └── globals.css        # Global styles + animations
 ├── components/
 │   ├── Header.tsx         # Header with sync status
+│   ├── HeroSection.tsx    # Hero with glow orbs
+│   ├── Footer.tsx         # Footer with links
 │   ├── ShoeGrid.tsx       # Grid with filters
 │   ├── ShoeCard.tsx       # Card with progress bar
 │   ├── ShoeModal.tsx      # Detail modal with stagger
-│   ├── SearchBar.tsx      # Search with ⌘K hint
+│   ├── SearchBar.tsx      # Search with custom dropdown
 │   ├── BottomSheet.tsx    # Mobile filter sheet
 │   ├── EmptyState.tsx     # No results state
 │   └── filters/           # Filter components
 ├── styles/
 │   └── tokens.ts          # Design tokens (Linear/Vercel style)
-├── hooks/                 # Custom hooks
+├── hooks/                 # Custom hooks (useFilters, useSearch)
 ├── lib/                   # API utilities
 ├── types/                 # TypeScript interfaces
-├── utils/                 # Utility functions
-└── constants/             # App constants
+├── utils/                 # Utility functions (date, progress, displayNames)
+└── constants/             # App constants (URLs, brands)
 ```
 
 ## Design System
@@ -146,7 +148,6 @@ src/
 |-----|--------|
 | `←` `→` | Navigate shoes (modal) |
 | `ESC` | Close modal/zoom |
-| `⌘K` | Focus search |
 | `Enter` | Select card |
 
 ## Responsive Layout

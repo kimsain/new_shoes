@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Shoe } from '@/types/shoe';
 import { IMAGE_BASE_URL } from '@/constants';
 import { getStatusInfo } from '@/utils/date';
+import { getProgressPercent } from '@/utils/progress';
 
 interface ShoeCardProps {
   shoe: Shoe;
@@ -13,13 +14,6 @@ interface ShoeCardProps {
 }
 
 const MAX_RETRY_COUNT = 1;
-
-// D-day 진행률 계산 (최대 180일 기준)
-function getProgressPercent(daysRemaining: number | null): number {
-  if (daysRemaining === null) return 0;
-  if (daysRemaining <= 0) return 0;
-  return Math.min(100, (daysRemaining / 180) * 100);
-}
 
 function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);

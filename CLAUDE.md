@@ -35,7 +35,7 @@ src/
 ├── lib/           # API and data fetching
 ├── styles/        # Design tokens (tokens.ts)
 ├── types/         # TypeScript interfaces
-└── utils/         # Utility functions (date, displayNames)
+└── utils/         # Utility functions (date, displayNames, progress)
 ```
 
 ### Data Flow
@@ -118,18 +118,15 @@ Always use full class names from tokens.ts.
 - Glass effect: `backdrop-filter: blur(20px)`
 
 ### Key CSS Classes
-- `.card-enhanced` - Card with hover lift + glow effect (replaces `.card`)
+- `.card-new` - Card style with indigo glow on hover
 - `.glass` - Glassmorphism effect
 - `.skeleton` - Loading shimmer animation
 - `.break-words` - Word-level text wrapping
 - `.scrollbar-thin` - Thin scrollbar for sidebars
-- `.btn-haptic` - Button press with haptic feel (scale 0.95)
-- `.stagger-bounce` - Bouncy staggered entrance animation for grids
-- `.modal-backdrop-enhanced` - Enhanced modal backdrop with blur
 - `.modal-zoom-enter` / `.modal-zoom-exit` - Modal open/close animations
-- `.zoom-overlay` - Image zoom overlay
-- `.img-reveal` - Image fade-in with blur transition
-- `.nav-arrow-left` / `.nav-arrow-right` - Navigation arrow pulse animations
+- `.modal-stagger-1` to `.modal-stagger-6` - Staggered entrance for modal content
+- `.glow-orb`, `.glow-orb-1/2/3` - Hero section background orbs
+- `.animate-fade-in/out/up` - Fade animations
 
 ### Accessibility
 - Focus-visible rings on all interactive elements
@@ -162,6 +159,16 @@ Always use full class names from tokens.ts.
 - Card hover: Lift + emerald glow effect
 - Modal: Zoom-in/out with backdrop blur
 - Buttons: Haptic feedback feel
+
+## Refactoring Notes
+
+### Magic Numbers Reference
+- Layout: `max-w-[1400px]` container, `min-h-[44px]` touch target (WCAG 2.5.5)
+- Status thresholds: 30 days (urgent), 90 days (warning) - defined in `utils/date.ts`
+- Progress bar: 180 days max - defined in `utils/progress.ts`
+
+### tokens.ts ↔ globals.css Sync
+When adding animation classes to tokens.ts, ensure corresponding @keyframes exist in globals.css.
 
 ## Deployment
 

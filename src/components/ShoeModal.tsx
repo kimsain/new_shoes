@@ -6,6 +6,8 @@ import { Shoe } from '@/types/shoe';
 import { IMAGE_BASE_URL } from '@/constants';
 import { formatDate, getDetailedStatusInfo, getRemainingDays } from '@/utils/date';
 import { getDisplayName } from '@/utils/displayNames';
+import { getProgressPercent } from '@/utils/progress';
+import { DATA_URL } from '@/constants';
 
 interface ShoeModalProps {
   shoe: Shoe;
@@ -14,13 +16,6 @@ interface ShoeModalProps {
   onNext?: () => void;
   hasPrev?: boolean;
   hasNext?: boolean;
-}
-
-// D-day 진행률 계산 (최대 180일 기준)
-function getProgressPercent(daysRemaining: number | null): number {
-  if (daysRemaining === null) return 0;
-  if (daysRemaining <= 0) return 0;
-  return Math.min(100, (daysRemaining / 180) * 100);
 }
 
 export default function ShoeModal({
@@ -39,14 +34,12 @@ export default function ShoeModal({
   const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
   const progressPercent = getProgressPercent(remainingDays);
 
-  // Status bar color
-  const getStatusBarColor = () => {
-    if (remainingDays === null) return 'bg-zinc-500';
-    if (remainingDays <= 0) return 'bg-red-500';
-    if (remainingDays <= 30) return 'bg-amber-500';
-    if (remainingDays <= 90) return 'bg-sky-500';
-    return 'bg-emerald-500';
-  };
+  // Status bar color - uses same color as status.bar from tokens
+  const statusBarColor = status.bg.includes('red') ? 'bg-red-500'
+    : status.bg.includes('amber') ? 'bg-amber-500'
+    : status.bg.includes('sky') ? 'bg-sky-500'
+    : status.bg.includes('emerald') ? 'bg-emerald-500'
+    : 'bg-zinc-500';
 
   // 모달 닫기 애니메이션
   const handleClose = useCallback(() => {
@@ -251,13 +244,13 @@ export default function ShoeModal({
                   <span className={`text-lg font-semibold ${status.color}`}>
                     {remainingDays !== null && remainingDays > 0 ? `D-${remainingDays}` : status.text}
                   </span>
-                  <span className={`w-2.5 h-2.5 rounded-full ${getStatusBarColor()}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full ${statusBarColor}`} />
                 </div>
 
                 {/* Progress bar */}
                 <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-3">
                   <div
-                    className={`h-full rounded-full ${getStatusBarColor()} transition-all duration-700 ease-out`}
+                    className={`h-full rounded-full ${statusBarColor} transition-all duration-700 ease-out`}
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -317,7 +310,7 @@ export default function ShoeModal({
               <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
                 {/* External link */}
                 <a
-                  href="https://certcheck.worldathletics.org/FullList"
+                  href={DATA_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-indigo-400 transition-colors duration-200"

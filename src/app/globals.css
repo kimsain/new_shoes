@@ -69,24 +69,6 @@ body {
 }
 
 /* ============================================
-   GRADIENT TEXT
-   ============================================ */
-
-.text-gradient {
-  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-white {
-  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ============================================
    GLOW ORBS (Hero Background)
    ============================================ */
 
@@ -158,22 +140,6 @@ body {
   transform: scale(1.05) rotate(1deg);
 }
 
-.card-new:hover .glow-line {
-  opacity: 1;
-}
-
-/* Glow line for cards */
-.glow-line {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.glow-line-visible {
-  opacity: 1;
-}
-
 /* ============================================
    GLASS EFFECT
    ============================================ */
@@ -185,51 +151,9 @@ body {
   border: 1px solid var(--border-subtle);
 }
 
-.glass-heavy {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-}
-
 /* ============================================
    MODAL STYLES
    ============================================ */
-
-.modal-backdrop-new {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-@keyframes modal-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes modal-exit {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-}
-
-.modal-enter {
-  animation: modal-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-exit {
-  animation: modal-exit 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
 
 /* Modal content stagger */
 .modal-stagger > * {
@@ -259,6 +183,37 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Modal zoom animation */
+@keyframes modal-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-zoom-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+.modal-zoom-enter {
+  animation: modal-zoom-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-zoom-exit {
+  animation: modal-zoom-out 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* ============================================
@@ -299,25 +254,6 @@ body {
 }
 
 /* ============================================
-   ANIMATIONS - SCALE
-   ============================================ */
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ============================================
    ANIMATIONS - SLIDE
    ============================================ */
 
@@ -346,49 +282,6 @@ body {
 }
 
 /* ============================================
-   ANIMATIONS - GLOW
-   ============================================ */
-
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
-  }
-}
-
-@keyframes border-glow {
-  0%, 100% {
-    border-color: rgba(99, 102, 241, 0.3);
-  }
-  50% {
-    border-color: rgba(99, 102, 241, 0.6);
-  }
-}
-
-.animate-glow {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-.animate-border-glow {
-  animation: border-glow 2s ease-in-out infinite;
-}
-
-/* ============================================
-   ANIMATIONS - FLOAT
-   ============================================ */
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* ============================================
    ANIMATIONS - SHIMMER
    ============================================ */
 
@@ -406,129 +299,6 @@ body {
   );
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
-}
-
-/* ============================================
-   ANIMATIONS - STAGGER GRID
-   ============================================ */
-
-@keyframes card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-    filter: blur(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-.stagger-grid > * {
-  animation: card-enter 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-}
-
-.stagger-grid > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-grid > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-grid > *:nth-child(3) { animation-delay: 100ms; }
-.stagger-grid > *:nth-child(4) { animation-delay: 150ms; }
-.stagger-grid > *:nth-child(5) { animation-delay: 200ms; }
-.stagger-grid > *:nth-child(6) { animation-delay: 250ms; }
-.stagger-grid > *:nth-child(7) { animation-delay: 300ms; }
-.stagger-grid > *:nth-child(8) { animation-delay: 350ms; }
-.stagger-grid > *:nth-child(9) { animation-delay: 400ms; }
-.stagger-grid > *:nth-child(10) { animation-delay: 450ms; }
-.stagger-grid > *:nth-child(11) { animation-delay: 500ms; }
-.stagger-grid > *:nth-child(12) { animation-delay: 550ms; }
-
-/* ============================================
-   ANIMATIONS - TEXT REVEAL
-   ============================================ */
-
-@keyframes text-reveal {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-.animate-text-reveal {
-  animation: text-reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ============================================
-   ANIMATIONS - COUNT UP (for stats)
-   ============================================ */
-
-@keyframes count-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-count-up {
-  animation: count-up 0.5s ease-out;
-}
-
-/* ============================================
-   BUTTON STYLES
-   ============================================ */
-
-.btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
-  font-weight: 500;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.4);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.6);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active {
-  transform: scale(0.98) translateY(0);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #a1a1aa;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: white;
-}
-
-.btn-ghost {
-  color: #71717a;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
-}
-
-/* Button press effect */
-.btn-press:active {
-  transform: scale(0.97);
 }
 
 /* ============================================
@@ -650,29 +420,6 @@ body {
 }
 
 /* ============================================
-   FOCUS STYLES
-   ============================================ */
-
-.focus-ring:focus,
-.focus-ring:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--accent-indigo);
-}
-
-input:focus,
-select:focus,
-button:focus-visible {
-  outline: 2px solid var(--accent-indigo);
-  outline-offset: 2px;
-}
-
-input:focus:not(:focus-visible),
-select:focus:not(:focus-visible),
-button:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* ============================================
    UTILITY CLASSES
    ============================================ */
 
@@ -702,38 +449,4 @@ button:focus:not(:focus-visible) {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ============================================
-   COMMAND PALETTE
-   ============================================ */
-
-.command-palette {
-  background: rgba(10, 10, 10, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(20px);
-}
-
-.command-item {
-  padding: 12px 16px;
-  border-radius: 8px;
-  transition: all 0.15s ease;
-  cursor: pointer;
-}
-
-.command-item:hover,
-.command-item.selected {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.command-shortcut {
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
-  font-size: 11px;
-  color: #71717a;
 }

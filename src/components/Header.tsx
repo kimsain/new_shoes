@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ACCENT, BUTTON } from '@/styles/tokens';
+import { DATA_URL } from '@/constants';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -61,7 +62,7 @@ export default function Header() {
         {/* Right - Links */}
         <div className="flex items-center gap-3 ml-auto">
           <a
-            href="https://certcheck.worldathletics.org/FullList"
+            href={DATA_URL}
             target="_blank"
             rel="noopener noreferrer"
             className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} text-sm text-zinc-400 ${BUTTON.secondary.hover} transition-all duration-300`}
