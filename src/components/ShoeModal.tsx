@@ -74,10 +74,12 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="modal-title"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="닫기"
           className="absolute top-5 right-5 z-10 w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,7 +130,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-start justify-between gap-4 mb-3">
-                <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
+                <h2 id="modal-title" className="text-2xl lg:text-3xl font-bold text-white leading-tight">
                   {shoe.productName}
                 </h2>
               </div>

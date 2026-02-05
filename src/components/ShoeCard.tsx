@@ -49,6 +49,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
       className="card group relative cursor-pointer overflow-hidden focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
       tabIndex={0}
       role="button"
+      aria-label={`${shoe.manufacturerName} ${shoe.productName} - ${status.text}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -137,7 +138,7 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
 
         {/* Footer - Disciplines preview */}
         <div className="flex items-center gap-1.5 overflow-hidden">
-          {shoe.disciplines.slice(0, 2).map((disc, idx) => (
+          {shoe.disciplines.slice(0, 2).map((disc) => (
             <span
               key={disc.name}
               className="px-2 py-1 bg-zinc-800/80 text-zinc-300 rounded-md text-[11px] font-medium truncate border border-zinc-700/50"
