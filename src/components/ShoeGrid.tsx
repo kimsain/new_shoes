@@ -235,7 +235,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-4 py-3 rounded-xl border transition-all duration-300 flex items-center gap-2 btn-press ${
+                className={`px-4 sm:px-4 py-3 min-h-[44px] rounded-xl border transition-all duration-300 flex items-center gap-2 btn-press ${
                   showAdvancedFilters || activeFilterCount > 0
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                     : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
@@ -255,7 +255,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'newest' | 'expiring' | 'alphabetical')}
-                className="px-4 py-3 rounded-xl bg-white/[0.03] text-white border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 text-sm cursor-pointer"
+                className="px-4 py-3 min-h-[44px] rounded-xl bg-white/[0.03] text-white border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 transition-all duration-300 text-sm cursor-pointer"
               >
                 <option value="newest">최신순</option>
                 <option value="expiring">만료임박순</option>
@@ -379,7 +379,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       {!hasActiveFilters && (
         <section className="mb-14">
           <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 stagger-children">
             {newestShoes.map((shoe) => (
               <ShoeCard
                 key={`newest-${shoe.productApplicationuuid}`}
@@ -397,7 +397,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         <section key={brand} className="mb-14">
           {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-14" />}
           <SectionHeader title={brand} count={groupedShoes[brand].length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 stagger-children">
             {groupedShoes[brand].map((shoe) => (
               <ShoeCard
                 key={shoe.productApplicationuuid}

@@ -106,15 +106,15 @@ export default async function Home() {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
+          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight leading-tight">
             <span className="text-gradient">Development</span>
             <br />
             <span className="text-emerald-400">Shoes</span>
           </h1>
 
           {/* Description */}
-          <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            World Athletics 승인 대기 중인 프로토타입 러닝화를<br className="hidden sm:block" />
+          <p className="text-base sm:text-lg md:text-xl text-zinc-400 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
+            World Athletics 승인 대기 중인<br className="sm:hidden" /> 프로토타입 러닝화를<br className="hidden sm:block" />
             한눈에 확인하세요
           </p>
 
