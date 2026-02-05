@@ -46,14 +46,19 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Debounce search input
+  // Debounce search input with loading indicator
   React.useEffect(() => {
+    if (searchInput !== searchQuery) {
+      setIsSearching(true);
+    }
     const timer = setTimeout(() => {
       setSearchQuery(searchInput);
+      setIsSearching(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, searchQuery]);
 
   const newestShoes = useMemo(() => {
     return [...shoes]
@@ -215,28 +220,36 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="relative flex-1">
-              <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              {isSearching ? (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4">
+                  <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                </div>
+              ) : (
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
               <input
                 type="text"
                 placeholder="신발명, 브랜드, 모델번호 검색..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300"
+                className="w-full pl-11 pr-12 py-3 rounded-xl bg-white/[0.03] text-white placeholder-zinc-500 border border-white/[0.06] focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all duration-300"
               />
               {searchInput && (
                 <button
                   onClick={() => {
                     setSearchInput('');
                     setSearchQuery('');
+                    setIsSearching(false);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-all"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                  aria-label="검색어 지우기"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -340,10 +353,10 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
 
               {/* Clear */}
               {hasActiveFilters && (
-                <div className="pt-3 border-t border-white/[0.04]">
+                <div className="pt-4 border-t border-white/[0.04]">
                   <button
                     onClick={clearAllFilters}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                    className="flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 transition-all duration-200 btn-press"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -489,7 +502,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 btn-press ripple ${
+      className={`px-3 py-2 min-h-[36px] rounded-lg text-sm font-medium border transition-all duration-200 btn-press ripple ${
         active
           ? colors[color]
           : 'bg-white/[0.03] text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-white'

@@ -56,6 +56,9 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
     if (remainingDays <= 30) {
       return { text: `만료까지 ${remainingDays}일`, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
     }
+    if (remainingDays <= 90) {
+      return { text: `만료까지 ${remainingDays}일`, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' };
+    }
     return { text: `만료까지 ${remainingDays}일`, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
   };
 
@@ -67,7 +70,7 @@ export default function ShoeModal({ shoe, onClose }: ShoeModalProps) {
       onClick={onClose}
     >
       <div
-        className="modal-content relative bg-zinc-900 rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-white/5 shadow-2xl"
+        className="modal-content relative bg-zinc-900 rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-white/5 shadow-2xl overscroll-contain"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
