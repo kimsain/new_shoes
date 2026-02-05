@@ -86,7 +86,7 @@ export default function SearchBar({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className={`appearance-none ${compact ? 'px-3 pr-8' : 'px-4 pr-10'} py-3 rounded-2xl bg-white/[0.02] text-white border border-white/[0.06] focus:outline-none focus:border-indigo-500/50 transition-all duration-200 text-sm cursor-pointer`}
+          className={`appearance-none ${compact ? 'px-3 pr-8' : 'px-4 pr-10'} py-3 rounded-2xl bg-white/[0.02] text-white border border-white/[0.06] focus:outline-none focus:border-indigo-500/50 transition-all duration-200 text-sm cursor-pointer [&>option]:bg-zinc-900 [&>option]:text-white`}
         >
           <option value="newest">Newest</option>
           <option value="expiring">Expiring</option>
