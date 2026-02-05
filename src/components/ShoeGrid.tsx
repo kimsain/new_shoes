@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Shoe } from '@/types/shoe';
 import { NEWEST_SHOES_COUNT } from '@/constants';
 import { useFilters, filterAndSortShoes, groupShoesByBrand, sortBrandsWithPriority } from '@/hooks/useFilters';
 import { useSearch } from '@/hooks/useSearch';
 
 import ShoeCard from './ShoeCard';
-import ShoeModal from './ShoeModal';
 import SearchBar from './SearchBar';
 import SectionHeader from './SectionHeader';
 import EmptyState from './EmptyState';
 import BottomSheet from './BottomSheet';
 import { SidebarFilter, MobileFilter, ActiveFilterBadge } from './filters';
 
+// Dynamic import for modal (code splitting)
+const ShoeModal = lazy(() => import('./ShoeModal'));
+
 interface ShoeGridProps {
   shoes: Shoe[];
 }
 
 export default function ShoeGrid({ shoes }: ShoeGridProps) {
-  const [selectedShoe, setSelectedShoe] = useState<Shoe | null>(null);
+  const [selectedShoeIndex, setSelectedShoeIndex] = useState<number | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Hooks
@@ -56,11 +58,36 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   // Computed: has active filters
   const hasActiveFilters = filters.activeFilterCount > 0 || search.searchQuery !== '';
 
+  // Selected shoe from filtered list
+  const selectedShoe = selectedShoeIndex !== null ? filteredShoes[selectedShoeIndex] : null;
+
+  // Navigation handlers
+  const handleSelectShoe = useCallback((shoe: Shoe) => {
+    const index = filteredShoes.findIndex((s) => s.productApplicationuuid === shoe.productApplicationuuid);
+    setSelectedShoeIndex(index >= 0 ? index : null);
+  }, [filteredShoes]);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedShoeIndex(null);
+  }, []);
+
+  const handlePrevShoe = useCallback(() => {
+    if (selectedShoeIndex !== null && selectedShoeIndex > 0) {
+      setSelectedShoeIndex(selectedShoeIndex - 1);
+    }
+  }, [selectedShoeIndex]);
+
+  const handleNextShoe = useCallback(() => {
+    if (selectedShoeIndex !== null && selectedShoeIndex < filteredShoes.length - 1) {
+      setSelectedShoeIndex(selectedShoeIndex + 1);
+    }
+  }, [selectedShoeIndex, filteredShoes.length]);
+
   // Clear all (filters + search)
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     filters.clearAllFilters();
     search.clearSearch();
-  };
+  }, [filters, search]);
 
   // Shared filter props
   const filterProps = {
@@ -119,7 +146,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             groupedShoes={groupedShoes}
             sortedBrands={sortedBrands}
             hasActiveFilters={hasActiveFilters}
-            onSelectShoe={setSelectedShoe}
+            onSelectShoe={handleSelectShoe}
             onClearFilters={handleClearAll}
           />
         </main>
@@ -146,7 +173,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
             {/* Filter Button */}
             <button
               onClick={() => setShowMobileFilters(true)}
-              className={`px-3 py-2.5 min-h-[44px] rounded-xl border transition-all duration-300 flex items-center gap-2 btn-press ${
+              className={`px-3 py-2.5 min-h-[44px] rounded-xl border transition-all duration-300 flex items-center gap-2 btn-haptic ${
                 filters.activeFilterCount > 0
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                   : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
@@ -221,13 +248,30 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
           groupedShoes={groupedShoes}
           sortedBrands={sortedBrands}
           hasActiveFilters={hasActiveFilters}
-          onSelectShoe={setSelectedShoe}
+          onSelectShoe={handleSelectShoe}
           onClearFilters={handleClearAll}
         />
       </div>
 
-      {/* Modal */}
-      {selectedShoe && <ShoeModal shoe={selectedShoe} onClose={() => setSelectedShoe(null)} />}
+      {/* Modal with Suspense for lazy loading */}
+      {selectedShoe && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+              <div className="w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          }
+        >
+          <ShoeModal
+            shoe={selectedShoe}
+            onClose={handleCloseModal}
+            onPrev={handlePrevShoe}
+            onNext={handleNextShoe}
+            hasPrev={selectedShoeIndex !== null && selectedShoeIndex > 0}
+            hasNext={selectedShoeIndex !== null && selectedShoeIndex < filteredShoes.length - 1}
+          />
+        </Suspense>
+      )}
     </>
   );
 }
@@ -270,7 +314,7 @@ function MainContent({
       {!hasActiveFilters && (
         <section className="mb-10">
           <SectionHeader title="Newest" badge="NEW" count={newestShoes.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
             {newestShoes.map((shoe) => (
               <ShoeCard
                 key={`newest-${shoe.productApplicationuuid}`}
@@ -288,7 +332,7 @@ function MainContent({
         <section key={brand} className="mb-10">
           {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-10" />}
           <SectionHeader title={brand} count={groupedShoes[brand].length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
             {groupedShoes[brand].map((shoe) => (
               <ShoeCard
                 key={shoe.productApplicationuuid}

@@ -49,8 +49,8 @@ src/
 | Component | Description |
 |-----------|-------------|
 | `ShoeGrid` | Main grid with search/filter. Desktop: sidebar layout. Mobile: bottom sheet filter |
-| `ShoeCard` | Card showing shoe image, name, D-day status, disciplines |
-| `ShoeModal` | Full details with large image, dates, all disciplines |
+| `ShoeCard` | Card with image loading animation, retry logic, React.memo optimization |
+| `ShoeModal` | Full details with image zoom, keyboard navigation (←→), close animation |
 | `Header` | Fixed header with logo, sync status badge, external link |
 
 ### Responsive Layouts
@@ -118,19 +118,50 @@ Always use full class names from tokens.ts.
 - Glass effect: `backdrop-filter: blur(20px)`
 
 ### Key CSS Classes
-- `.card` - Card with hover elevation
+- `.card-enhanced` - Card with hover lift + glow effect (replaces `.card`)
 - `.glass` - Glassmorphism effect
 - `.skeleton` - Loading shimmer animation
 - `.break-words` - Word-level text wrapping
 - `.scrollbar-thin` - Thin scrollbar for sidebars
-- `.btn-press` - Button press animation (scale 0.97)
-- `.stagger-children` - Staggered entrance animation for grids
+- `.btn-haptic` - Button press with haptic feel (scale 0.95)
+- `.stagger-bounce` - Bouncy staggered entrance animation for grids
+- `.modal-backdrop-enhanced` - Enhanced modal backdrop with blur
+- `.modal-zoom-enter` / `.modal-zoom-exit` - Modal open/close animations
+- `.zoom-overlay` - Image zoom overlay
+- `.img-reveal` - Image fade-in with blur transition
+- `.nav-arrow-left` / `.nav-arrow-right` - Navigation arrow pulse animations
 
 ### Accessibility
 - Focus-visible rings on all interactive elements
 - 44px minimum touch targets
 - `prefers-reduced-motion` support
 - ARIA labels on buttons and modals
+- Keyboard navigation in modal (←→ arrows, ESC to close)
+
+## Performance Optimizations
+
+- **React.memo**: ShoeCard uses custom comparison to prevent unnecessary re-renders
+- **Dynamic Import**: ShoeModal is lazy-loaded with Suspense for code splitting
+- **Image Loading**: Native lazy loading with error retry logic (1 retry)
+- **useCallback**: All event handlers memoized to prevent child re-renders
+
+## UX Features
+
+### Modal Navigation
+- **Arrow keys**: Navigate between shoes (←→)
+- **Image zoom**: Click image to view full-size, click again or ESC to close
+- **Keyboard hints**: Displayed at bottom of modal
+
+### Image Loading
+- Skeleton with brand initials while loading
+- Blur-to-sharp transition on load
+- Automatic retry on load failure
+
+### Animations
+- Card entrance: Bouncy stagger animation
+- Card hover: Lift + emerald glow effect
+- Modal: Zoom-in/out with backdrop blur
+- Buttons: Haptic feedback feel
 
 ## Deployment
 
