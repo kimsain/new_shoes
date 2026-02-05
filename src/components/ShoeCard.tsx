@@ -137,17 +137,17 @@ export default function ShoeCard({ shoe, onClick, isNew }: ShoeCardProps) {
 
         {/* Footer - Disciplines preview */}
         <div className="flex items-center gap-1.5 overflow-hidden">
-          {shoe.disciplines.slice(0, 3).map((disc, idx) => (
+          {shoe.disciplines.slice(0, 2).map((disc, idx) => (
             <span
               key={disc.name}
-              className="px-2 py-0.5 bg-zinc-800/60 text-zinc-400 rounded text-[11px] truncate"
+              className="px-2 py-1 bg-zinc-800/80 text-zinc-300 rounded-md text-[11px] font-medium truncate border border-zinc-700/50"
             >
               {disc.name}
             </span>
           ))}
-          {shoe.disciplines.length > 3 && (
-            <span className="text-[11px] text-zinc-600">
-              +{shoe.disciplines.length - 3}
+          {shoe.disciplines.length > 2 && (
+            <span className="px-2 py-1 bg-zinc-800/50 text-zinc-500 rounded-md text-[11px] font-medium border border-zinc-700/30">
+              +{shoe.disciplines.length - 2}
             </span>
           )}
         </div>

@@ -77,7 +77,7 @@ export default async function Home() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-16 px-4 overflow-hidden">
+      <section className="relative pt-28 pb-20 px-4 overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-[100px]" />
@@ -130,6 +130,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Gradient Transition */}
+      <div className="h-32 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]" />
 
       {/* Main Content */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">

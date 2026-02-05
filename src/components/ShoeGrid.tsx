@@ -198,7 +198,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
   return (
     <>
       {/* Sticky Filter Bar */}
-      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 glass mb-10">
+      <div className="sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-5 glass mb-12">
         <div className="flex flex-col gap-4">
           {/* Search and Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -393,8 +393,9 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       )}
 
       {/* Brand Sections */}
-      {sortedBrands.map((brand) => (
+      {sortedBrands.map((brand, idx) => (
         <section key={brand} className="mb-14">
+          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-14" />}
           <SectionHeader title={brand} count={groupedShoes[brand].length} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-children">
             {groupedShoes[brand].map((shoe) => (
