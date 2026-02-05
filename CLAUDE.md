@@ -23,6 +23,21 @@ npm run lint    # Run ESLint
 - **Styling**: Tailwind CSS v4
 - **Data Fetching**: Server-side with ISR (revalidates every hour)
 
+### Project Structure
+
+```
+src/
+├── app/           # Next.js App Router pages
+├── components/    # React components
+│   └── filters/   # Filter-related components
+├── constants/     # App constants (URLs, brands)
+├── hooks/         # Custom React hooks (useFilters, useSearch)
+├── lib/           # API and data fetching
+├── styles/        # Design tokens (tokens.ts)
+├── types/         # TypeScript interfaces
+└── utils/         # Utility functions (date, displayNames)
+```
+
 ### Data Flow
 1. `page.tsx` fetches HTML from World Athletics FullList page
 2. Parses embedded JSON from `litProductsDataRaw` variable
@@ -83,6 +98,19 @@ Format: `https://certcheck.worldathletics.org/OpenDocument/{imageDocumentuuid}`
 
 ## Design System
 
+### Design Tokens (src/styles/tokens.ts)
+
+All colors and styles are defined in tokens.ts:
+- `BG` - Background colors (page, surface, interactive, overlay)
+- `BORDER` - Border colors (subtle: white/[0.06], default: white/10)
+- `TEXT` - Text colors (primary → disabled, 5 levels)
+- `STATUS` - D-day status colors (expired, urgent, warning, safe, unknown)
+- `FILTER` - Filter category colors (brand=emerald, discipline=sky, type=violet)
+- `BUTTON`, `BADGE`, `CHIP` - Component-specific styles
+
+**Important:** Tailwind JIT doesn't support dynamic classes like `bg-${color}-500`.
+Always use full class names from tokens.ts.
+
 ### CSS Variables (globals.css)
 - `--background`: #0a0a0a
 - `--accent`: #10b981 (emerald)
@@ -95,6 +123,8 @@ Format: `https://certcheck.worldathletics.org/OpenDocument/{imageDocumentuuid}`
 - `.skeleton` - Loading shimmer animation
 - `.break-words` - Word-level text wrapping
 - `.scrollbar-thin` - Thin scrollbar for sidebars
+- `.btn-press` - Button press animation (scale 0.97)
+- `.stagger-children` - Staggered entrance animation for grids
 
 ### Accessibility
 - Focus-visible rings on all interactive elements
