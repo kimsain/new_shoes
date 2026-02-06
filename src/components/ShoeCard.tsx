@@ -72,11 +72,12 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
             alt={shoe.productName}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className={`object-contain p-8 transition-all duration-500 ease-out ${
+            className={`object-contain p-8 transition-all duration-700 ${
               imageLoaded
                 ? 'opacity-100 scale-100 blur-0'
-                : 'opacity-0 scale-95 blur-sm'
+                : 'opacity-0 scale-[0.97] blur-sm'
             } group-hover:scale-105 group-hover:rotate-1`}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
             onLoad={handleImageLoad}
             onError={handleImageError}
             loading="lazy"
@@ -106,11 +107,11 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
         )}
 
         {/* Top shine effect on hover */}
-        <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       </div>
 
       {/* Glow line separator */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent group-hover:via-indigo-500/40 transition-all duration-500" />
+      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent group-hover:via-indigo-500/40 transition-all duration-700" />
 
       {/* Content */}
       <div className="p-6">
