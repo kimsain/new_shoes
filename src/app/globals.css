@@ -360,6 +360,37 @@ body {
   animation: modal-zoom-out 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Modal crossfade transitions (prev/next navigation) */
+@keyframes crossfade-from-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes crossfade-from-right {
+  0% {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.modal-crossfade-from-left {
+  animation: crossfade-from-left 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-crossfade-from-right {
+  animation: crossfade-from-right 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* ============================================
    ANIMATIONS - FADE
    ============================================ */

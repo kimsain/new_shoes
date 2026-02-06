@@ -29,6 +29,8 @@ export default function ShoeModal({
   const [imageError, setImageError] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null);
+  const [transitionKey, setTransitionKey] = useState(shoe.productApplicationuuid);
   const status = getDetailedStatusInfo(shoe.certificationEndDateExp);
   const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
   const progressPercent = getProgressPercent(remainingDays);
@@ -48,6 +50,21 @@ export default function ShoeModal({
     }, 200);
   }, [onClose]);
 
+  // 방향 전환 핸들러
+  const handlePrevWithTransition = useCallback(() => {
+    if (hasPrev && onPrev) {
+      setTransitionDirection('left');
+      onPrev();
+    }
+  }, [hasPrev, onPrev]);
+
+  const handleNextWithTransition = useCallback(() => {
+    if (hasNext && onNext) {
+      setTransitionDirection('right');
+      onNext();
+    }
+  }, [hasNext, onNext]);
+
   // 키보드 이벤트 핸들러
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -63,16 +80,12 @@ export default function ShoeModal({
           handleClose();
           break;
         case 'ArrowLeft':
-          if (hasPrev && onPrev) {
-            e.preventDefault();
-            onPrev();
-          }
+          e.preventDefault();
+          handlePrevWithTransition();
           break;
         case 'ArrowRight':
-          if (hasNext && onNext) {
-            e.preventDefault();
-            onNext();
-          }
+          e.preventDefault();
+          handleNextWithTransition();
           break;
       }
     };
@@ -84,13 +97,14 @@ export default function ShoeModal({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [handleClose, onPrev, onNext, hasPrev, hasNext, isZoomed]);
+  }, [handleClose, handlePrevWithTransition, handleNextWithTransition, isZoomed]);
 
-  // 신발 변경 시 상태 초기화
+  // 신발 변경 시 상태 초기화 + 전환 애니메이션 트리거
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
     setIsZoomed(false);
+    setTransitionKey(shoe.productApplicationuuid);
   }, [shoe.productApplicationuuid]);
 
   const toggleZoom = () => {
@@ -125,7 +139,7 @@ export default function ShoeModal({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onPrev();
+                    handlePrevWithTransition();
                   }}
                   aria-label="Previous shoe"
                   className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
@@ -150,7 +164,7 @@ export default function ShoeModal({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onNext();
+                    handleNextWithTransition();
                   }}
                   aria-label="Next shoe"
                   className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
@@ -174,6 +188,17 @@ export default function ShoeModal({
 
           {/* Content */}
           <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
+            <div
+              key={transitionKey}
+              className={
+                transitionDirection === 'left'
+                  ? 'modal-crossfade-from-left'
+                  : transitionDirection === 'right'
+                  ? 'modal-crossfade-from-right'
+                  : ''
+              }
+              onAnimationEnd={() => setTransitionDirection(null)}
+            >
             {/* Image Section */}
             <div
               className="relative aspect-[16/9] bg-black/40 flex items-center justify-center cursor-zoom-in modal-stagger-1"
@@ -316,6 +341,7 @@ export default function ShoeModal({
                   <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">ESC</kbd>
                 </span>
               </div>
+            </div>
             </div>
           </div>
         </div>

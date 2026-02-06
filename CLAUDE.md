@@ -123,6 +123,8 @@ Always use full class names from tokens.ts.
 - `.glass` - Glassmorphism effect
 - `.skeleton` - Loading shimmer animation
 - `.break-words` - Word-level text wrapping
+
+**Text wrapping rule:** Never use `hyphens: auto` or `break-all` on natural language text. Always wrap at word boundaries. Use `break-words` (word-break + overflow-wrap, no hyphens).
 - `.scrollbar-thin` - Thin scrollbar for sidebars
 - `.modal-zoom-enter` / `.modal-zoom-exit` - Modal open/close animations
 - `.modal-stagger-1` to `.modal-stagger-6` - Staggered entrance for modal content
@@ -167,6 +169,14 @@ Always use full class names from tokens.ts.
 - Hero: Activation beam + blur-to-sharp text reveal
 - Modal: Zoom-in/out with backdrop blur
 - Buttons: Haptic feedback feel
+
+**Standard easing:** `cubic-bezier(0.22, 1, 0.36, 1)` — used across all animations for organic feel.
+
+### Typography Rules
+- Always set explicit `text-*` size on every text element — never rely on inherited font size
+- Use `line-clamp-*` + `break-words` for multi-line truncation (e.g., product names)
+- Use `truncate` with `title` attribute for single-line overflow
+- `tabular-nums` on all numeric counts for consistent alignment
 
 ## Refactoring Notes
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -11,17 +11,53 @@ interface BottomSheetProps {
 }
 
 const CLOSE_DURATION = 250;
+const SWIPE_DISMISS_THRESHOLD = 100;
 
 export default function BottomSheet({ isOpen, onClose, title, footer, children }: BottomSheetProps) {
   const [isClosing, setIsClosing] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const isDragging = useRef(false);
+  const startY = useRef(0);
+  const currentY = useRef(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => {
     setIsClosing(true);
+    setDragY(0);
     setTimeout(() => {
       setIsClosing(false);
       onClose();
     }, CLOSE_DURATION);
   }, [onClose]);
+
+  // Touch handlers for swipe-to-dismiss
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    isDragging.current = true;
+    startY.current = e.touches[0].clientY;
+    currentY.current = 0;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    const deltaY = e.touches[0].clientY - startY.current;
+    // Only allow dragging downward
+    const clampedY = Math.max(0, deltaY);
+    currentY.current = clampedY;
+    setDragY(clampedY);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    if (currentY.current >= SWIPE_DISMISS_THRESHOLD) {
+      // Dismiss
+      handleClose();
+    } else {
+      // Spring back
+      setDragY(0);
+    }
+  }, [handleClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,7 +70,23 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
     };
   }, [isOpen]);
 
+  // Reset drag state when opening
+  useEffect(() => {
+    if (isOpen) {
+      setDragY(0);
+      isDragging.current = false;
+    }
+  }, [isOpen]);
+
   if (!isOpen && !isClosing) return null;
+
+  const sheetStyle = dragY > 0 && !isClosing
+    ? { transform: `translateY(${dragY}px)`, transition: 'none' }
+    : undefined;
+
+  const springBackStyle = !isDragging.current && dragY === 0 && !isClosing
+    ? { transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }
+    : undefined;
 
   return (
     <div className="fixed inset-0 z-50">
@@ -43,15 +95,25 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
         className={`absolute inset-0 bg-black/70 backdrop-blur-sm ${
           isClosing ? 'animate-fade-out' : 'animate-in fade-in duration-200'
         }`}
+        style={dragY > 0 ? { opacity: Math.max(0.3, 1 - dragY / 400) } : undefined}
         onClick={handleClose}
       />
 
       {/* Sheet */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-[#0a0a0a] rounded-t-3xl border-t border-white/[0.06] max-h-[85vh] flex flex-col ${
-        isClosing ? 'animate-slide-out-bottom' : 'animate-in slide-in-from-bottom duration-300'
-      }`}>
-        {/* Drag Handle */}
-        <div className="flex justify-center py-3">
+      <div
+        ref={sheetRef}
+        className={`absolute bottom-0 left-0 right-0 bg-[#0a0a0a] rounded-t-3xl border-t border-white/[0.06] max-h-[85vh] flex flex-col ${
+          isClosing ? 'animate-slide-out-bottom' : dragY > 0 ? '' : 'animate-in slide-in-from-bottom duration-300'
+        }`}
+        style={{ ...sheetStyle, ...springBackStyle }}
+      >
+        {/* Drag Handle - swipe target */}
+        <div
+          className="flex justify-center py-3 cursor-grab active:cursor-grabbing touch-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="w-10 h-1 rounded-full bg-zinc-700" />
         </div>
 

@@ -2,6 +2,7 @@ import ShoeGrid from '@/components/ShoeGrid';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 import { fetchDevelopmentShoes } from '@/lib/api';
 
 export default async function Home() {
@@ -26,6 +27,9 @@ export default async function Home() {
 
       {/* Footer */}
       <Footer lastUpdated={lastUpdated} />
+
+      {/* Scroll to top */}
+      <ScrollToTop />
     </main>
   );
 }

@@ -1,28 +1,75 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ACCENT, BUTTON } from '@/styles/tokens';
 import { DATA_URL } from '@/constants';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const isMobile = useRef(false);
+
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    setScrolled(currentY > 10);
+
+    // Only hide/show on mobile
+    if (!isMobile.current) {
+      setHidden(false);
+      lastScrollY.current = currentY;
+      return;
+    }
+
+    // Always show at top of page
+    if (currentY < 50) {
+      setHidden(false);
+      lastScrollY.current = currentY;
+      return;
+    }
+
+    const delta = currentY - lastScrollY.current;
+
+    if (delta > 5) {
+      // Scrolling down - hide
+      setHidden(true);
+    } else if (delta < -5) {
+      // Scrolling up - show
+      setHidden(false);
+    }
+
+    lastScrollY.current = currentY;
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+    const checkMobile = () => {
+      isMobile.current = window.innerWidth < 1024;
+      // If switching to desktop, make sure header is visible
+      if (!isMobile.current) {
+        setHidden(false);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    checkMobile();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, [handleScroll]);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-black/80 backdrop-blur-xl border-b border-white/[0.06]'
           : 'bg-transparent'
       }`}
+      style={{
+        transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
+      }}
     >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center relative">
         {/* Logo - Left */}

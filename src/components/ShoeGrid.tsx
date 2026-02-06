@@ -11,6 +11,7 @@ import SearchBar from './SearchBar';
 import SectionHeader from './SectionHeader';
 import EmptyState from './EmptyState';
 import BottomSheet from './BottomSheet';
+import MobilePresetChips from './MobilePresetChips';
 import { SidebarFilter, MobileFilter, ActiveFilterBadge } from './filters';
 
 // Dynamic import for modal (code splitting)
@@ -182,6 +183,17 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
                 )}
               </button>
             </div>
+
+            {/* Preset Quick Filter Chips */}
+            <MobilePresetChips
+              selectedBrands={filters.selectedBrands}
+              toggleBrand={filters.toggleBrand}
+              statusFilter={filters.statusFilter}
+              setStatusFilter={filters.setStatusFilter}
+              selectedDisciplines={filters.selectedDisciplines}
+              toggleDiscipline={filters.toggleDiscipline}
+              disciplinesWithCount={filters.disciplinesWithCount}
+            />
 
             {/* Active Filters Summary */}
             {hasActiveFilters && (
