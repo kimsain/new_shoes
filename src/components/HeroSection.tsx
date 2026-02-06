@@ -20,11 +20,14 @@ export default function HeroSection() {
 
       <div className="relative max-w-5xl mx-auto text-center">
         {/* Badge */}
-        <div className="hero-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 mb-4 backdrop-blur-sm">
+        <div className="hero-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 backdrop-blur-sm">
           <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-indigo-300">
             ✦ Development Shoes
           </span>
         </div>
+
+        {/* Activation Beam */}
+        <div className="hero-beam" aria-hidden="true" />
 
         {/* Description */}
         <p className="hero-description text-sm sm:text-base text-zinc-400 max-w-xl mx-auto leading-relaxed">

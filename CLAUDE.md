@@ -51,7 +51,7 @@ src/
 | `ShoeGrid` | Main grid with search/filter. Desktop: sidebar layout. Mobile: bottom sheet filter |
 | `ShoeCard` | Card with image loading animation, retry logic, React.memo optimization |
 | `ShoeModal` | Full details with image zoom, keyboard navigation (←→), close animation |
-| `Header` | Fixed header with logo, sync status badge, external link |
+| `Header` | Fixed header with logo and external link |
 
 ### Responsive Layouts
 
@@ -105,16 +105,17 @@ All colors and styles are defined in tokens.ts:
 - `BORDER` - Border colors (subtle: white/[0.06], default: white/10)
 - `TEXT` - Text colors (primary → disabled, 5 levels)
 - `STATUS` - D-day status colors (expired, urgent, warning, safe, unknown)
-- `FILTER` - Filter category colors (brand=emerald, discipline=sky, type=violet)
+- `FILTER` - Filter category colors (brand=indigo, discipline=sky, type=violet)
 - `BUTTON`, `BADGE`, `CHIP` - Component-specific styles
 
 **Important:** Tailwind JIT doesn't support dynamic classes like `bg-${color}-500`.
 Always use full class names from tokens.ts.
 
 ### CSS Variables (globals.css)
-- `--background`: #0a0a0a
-- `--accent`: #10b981 (emerald)
-- `--card-bg`: #131313
+- `--background`: #000000
+- `--accent-indigo`: #6366f1 (indigo)
+- `--accent-violet`: #8b5cf6 (violet)
+- `--card-bg`: #0a0a0a
 - Glass effect: `backdrop-filter: blur(20px)`
 
 ### Key CSS Classes
@@ -129,6 +130,9 @@ Always use full class names from tokens.ts.
 - `.animate-fade-in/out/up` - Fade animations
 - `.stagger-bounce` - Card grid sequential bounce entrance animation
 - `.btn-haptic` - Button touch feedback (scale on press)
+- `.hero-badge` / `.hero-description` - Blur-to-sharp reveal entrance animations
+- `.hero-beam` - Activation beam (center→outward light line on page load)
+- `.animate-slide-out-bottom` - Bottom sheet exit animation
 
 ### Accessibility
 - Focus-visible rings on all interactive elements
@@ -136,6 +140,7 @@ Always use full class names from tokens.ts.
 - `prefers-reduced-motion` support
 - ARIA labels on buttons and modals
 - Keyboard navigation in modal (←→ arrows, ESC to close)
+- iOS Safe Area via `viewport-fit: cover` + `env(safe-area-inset-bottom)`
 
 ## Performance Optimizations
 
@@ -158,7 +163,8 @@ Always use full class names from tokens.ts.
 
 ### Animations
 - Card entrance: Bouncy stagger animation
-- Card hover: Lift + emerald glow effect
+- Card hover: Lift + indigo glow effect
+- Hero: Activation beam + blur-to-sharp text reveal
 - Modal: Zoom-in/out with backdrop blur
 - Buttons: Haptic feedback feel
 
