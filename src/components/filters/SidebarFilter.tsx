@@ -22,10 +22,10 @@ interface SidebarFilterProps {
 
 // 상태 필터 옵션
 const STATUS_OPTIONS = [
-  { value: 'all' as const, label: 'All' },
-  { value: 'valid' as const, label: 'Valid' },
-  { value: 'expiring' as const, label: 'Soon' },
-  { value: 'expired' as const, label: 'Expired' },
+  { value: 'all' as const, label: '전체' },
+  { value: 'valid' as const, label: '유효' },
+  { value: 'expiring' as const, label: '임박' },
+  { value: 'expired' as const, label: '만료' },
 ];
 
 export default function SidebarFilter({
@@ -46,7 +46,7 @@ export default function SidebarFilter({
   return (
     <div className="space-y-5">
       {/* Status - Segment Control */}
-      <FilterSection title="Status">
+      <FilterSection title="상태">
         <div className="segment-control">
           {STATUS_OPTIONS.map(({ value, label }) => {
             const isActive = statusFilter === value;
@@ -65,7 +65,7 @@ export default function SidebarFilter({
 
       {/* Brands - Toggle Chips Grid */}
       <FilterSection
-        title="Brand"
+        title="브랜드"
         selectedCount={selectedBrands.size}
       >
         <div className="grid grid-cols-2 gap-2">
@@ -87,7 +87,7 @@ export default function SidebarFilter({
 
       {/* Disciplines - Collapsible List */}
       <FilterSection
-        title="Discipline"
+        title="종목"
         selectedCount={selectedDisciplines.size}
       >
         <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1 scrollbar-thin">
@@ -112,7 +112,7 @@ export default function SidebarFilter({
 
       {/* Types - Toggle Chips */}
       <FilterSection
-        title="Type"
+        title="유형"
         selectedCount={selectedTypes.size}
       >
         <div className="space-y-1">
@@ -147,7 +147,7 @@ export default function SidebarFilter({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Clear all
+          초기화
         </button>
       )}
     </div>

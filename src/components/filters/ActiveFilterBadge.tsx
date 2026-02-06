@@ -1,6 +1,6 @@
 'use client';
 
-type BadgeColor = 'emerald' | 'sky' | 'violet' | 'amber' | 'red';
+type BadgeColor = 'indigo' | 'emerald' | 'sky' | 'violet' | 'amber' | 'red';
 
 interface ActiveFilterBadgeProps {
   label: string;
@@ -9,6 +9,7 @@ interface ActiveFilterBadgeProps {
 
 // Tailwind JIT를 위해 전체 클래스명 명시
 const COLOR_STYLES: Record<BadgeColor, string> = {
+  indigo: 'bg-indigo-500/15 text-indigo-400',
   emerald: 'bg-emerald-500/15 text-emerald-400',
   sky: 'bg-sky-500/15 text-sky-400',
   violet: 'bg-violet-500/15 text-violet-400',

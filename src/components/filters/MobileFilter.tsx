@@ -27,10 +27,10 @@ interface MobileFilterProps {
 }
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string; color: FilterColor }[] = [
-  { value: 'all', label: 'All', color: 'zinc' },
-  { value: 'valid', label: 'Valid', color: 'emerald' },
-  { value: 'expiring', label: 'Expiring', color: 'amber' },
-  { value: 'expired', label: 'Expired', color: 'red' },
+  { value: 'all', label: '전체', color: 'zinc' },
+  { value: 'valid', label: '유효', color: 'emerald' },
+  { value: 'expiring', label: '만료임박', color: 'amber' },
+  { value: 'expired', label: '만료', color: 'red' },
 ];
 
 export default function MobileFilter({
@@ -51,7 +51,7 @@ export default function MobileFilter({
   return (
     <div className="space-y-5">
       {/* Status */}
-      <FilterSection title="Status">
+      <FilterSection title="상태">
         {STATUS_OPTIONS.map(({ value, label, color }) => (
           <FilterChip
             key={value}
@@ -64,7 +64,7 @@ export default function MobileFilter({
       </FilterSection>
 
       {/* Brands */}
-      <FilterSection title="Brand" count={selectedBrands.size}>
+      <FilterSection title="브랜드" count={selectedBrands.size}>
         {brandsWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
@@ -77,7 +77,7 @@ export default function MobileFilter({
       </FilterSection>
 
       {/* Disciplines */}
-      <FilterSection title="Discipline" count={selectedDisciplines.size}>
+      <FilterSection title="종목" count={selectedDisciplines.size}>
         {disciplinesWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
@@ -90,7 +90,7 @@ export default function MobileFilter({
       </FilterSection>
 
       {/* Types */}
-      <FilterSection title="Type" count={selectedTypes.size}>
+      <FilterSection title="유형" count={selectedTypes.size}>
         {typesWithCount.map(({ name, count }) => (
           <FilterChip
             key={name}
@@ -112,7 +112,7 @@ export default function MobileFilter({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Clear all filters
+            필터 초기화
           </button>
         </div>
       )}

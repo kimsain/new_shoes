@@ -15,9 +15,9 @@ interface SearchBarProps {
 }
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'expiring', label: 'Expiring' },
-  { value: 'alphabetical', label: 'A-Z' },
+  { value: 'newest', label: '최신순' },
+  { value: 'expiring', label: '만료임박순' },
+  { value: 'alphabetical', label: '이름순' },
 ];
 
 export default function SearchBar({
@@ -27,7 +27,7 @@ export default function SearchBar({
   clearSearch,
   sortBy,
   setSortBy,
-  placeholder = 'Search shoes, brands, models...',
+  placeholder = '신발, 브랜드, 모델 검색...',
   compact = false,
 }: SearchBarProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function SearchBar({
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const currentLabel = SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || 'Sort';
+  const currentLabel = SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || '정렬';
 
   return (
     <div className={`flex ${compact ? 'gap-2' : 'gap-3'}`}>

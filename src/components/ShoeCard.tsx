@@ -100,7 +100,7 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
                   />
                 </svg>
               </div>
-              <span className="text-xs text-zinc-600">No image</span>
+              <span className="text-xs text-zinc-600">이미지 없음</span>
             </div>
           </div>
         )}

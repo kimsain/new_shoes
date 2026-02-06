@@ -21,19 +21,19 @@ export default function EmptyState({ onClearFilters, hasActiveFilters }: EmptySt
           </svg>
         </div>
       </div>
-      <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">결과 없음</h3>
       <p className="text-zinc-400 mb-2 max-w-sm mx-auto">
-        No shoes match your current filters
+        현재 필터와 일치하는 신발이 없습니다
       </p>
       <p className="text-zinc-500 text-sm mb-8">
-        Try adjusting your search or filters
+        검색어나 필터를 조정해 보세요
       </p>
       {hasActiveFilters && onClearFilters && (
         <button
           onClick={onClearFilters}
           className="px-6 py-3 min-h-[48px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-medium hover:from-indigo-600 hover:to-violet-600 active:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_-5px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.6)]"
         >
-          Clear all filters
+          필터 초기화
         </button>
       )}
     </div>

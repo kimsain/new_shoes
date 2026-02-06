@@ -10,7 +10,7 @@ interface FooterProps {
 
 export default function Footer({ lastUpdated, stats }: FooterProps) {
   return (
-    <footer className="relative pt-10 pb-8 px-4">
+    <footer className="relative pt-10 pb-[calc(2rem+env(safe-area-inset-bottom))] px-4">
       {/* Glow gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
 
@@ -25,12 +25,12 @@ export default function Footer({ lastUpdated, stats }: FooterProps) {
           <div className="inline-flex items-center gap-2 text-xs text-zinc-500 mb-4">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              Synced
+              동기화됨
             </span>
             <span className="text-zinc-700">·</span>
-            <span>{stats.total} shoes</span>
+            <span>{stats.total}개</span>
             <span className="text-zinc-700">·</span>
-            <span>Updated {lastUpdated}</span>
+            <span>업데이트 {lastUpdated}</span>
           </div>
         </div>
 
@@ -56,15 +56,15 @@ export default function Footer({ lastUpdated, stats }: FooterProps) {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
-            Source Data
+            원본 데이터
           </a>
         </div>
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-zinc-600 max-w-xl mx-auto leading-relaxed">
-          Development shoes are prototypes awaiting World Athletics approval.
+          개발 신발은 World Athletics 승인 대기 중인 프로토타입입니다.
           <br />
-          Not permitted in WAS Events or Olympic Games.
+          WAS 이벤트 및 올림픽에서는 사용할 수 없습니다.
         </p>
       </div>
     </footer>

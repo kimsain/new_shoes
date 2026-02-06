@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, ReactNode } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -10,7 +10,19 @@ interface BottomSheetProps {
   children: ReactNode;
 }
 
+const CLOSE_DURATION = 250;
+
 export default function BottomSheet({ isOpen, onClose, title, footer, children }: BottomSheetProps) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, CLOSE_DURATION);
+  }, [onClose]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -22,18 +34,22 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
-        onClick={onClose}
+        className={`absolute inset-0 bg-black/70 backdrop-blur-sm ${
+          isClosing ? 'animate-fade-out' : 'animate-in fade-in duration-200'
+        }`}
+        onClick={handleClose}
       />
 
       {/* Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#0a0a0a] rounded-t-3xl border-t border-white/[0.06] animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
+      <div className={`absolute bottom-0 left-0 right-0 bg-[#0a0a0a] rounded-t-3xl border-t border-white/[0.06] max-h-[85vh] flex flex-col ${
+        isClosing ? 'animate-slide-out-bottom' : 'animate-in slide-in-from-bottom duration-300'
+      }`}>
         {/* Drag Handle */}
         <div className="flex justify-center py-3">
           <div className="w-10 h-1 rounded-full bg-zinc-700" />
@@ -43,7 +59,7 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-11 h-11 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,7 +75,7 @@ export default function BottomSheet({ isOpen, onClose, title, footer, children }
 
         {/* Footer */}
         {footer && (
-          <div className="p-5 border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-sm">
+          <div className="p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-sm">
             {footer}
           </div>
         )}

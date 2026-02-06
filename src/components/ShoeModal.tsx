@@ -215,7 +215,7 @@ export default function ShoeModal({
                       />
                     </svg>
                   </div>
-                  <p className="text-zinc-600 text-sm">No image available</p>
+                  <p className="text-zinc-600 text-sm">이미지 없음</p>
                 </div>
               )}
 
@@ -225,7 +225,7 @@ export default function ShoeModal({
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                   </svg>
-                  Click to zoom
+                  클릭하여 확대
                 </div>
               )}
             </div>
@@ -235,7 +235,7 @@ export default function ShoeModal({
 
             {/* Info Section */}
             <div className="p-6 lg:p-8 space-y-6">
-              {/* Type */}
+              {/* 유형 */}
               <p className="text-zinc-500 modal-stagger-2">{shoe.shoeType}</p>
 
               {/* Status Card with Progress Bar */}
@@ -266,19 +266,19 @@ export default function ShoeModal({
               {/* Details Grid */}
               <div className="modal-stagger-4">
                 <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                  Details
+                  상세 정보
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <DetailCard label="Model" value={shoe.modelNumber || '-'} />
-                  <DetailCard label="Status" value={shoe.status === 'APPROVED_UNTIL' ? 'Limited' : 'Approved'} />
-                  {shoe.releaseDate && <DetailCard label="Release" value={formatDate(shoe.releaseDateExp)} />}
+                  <DetailCard label="모델" value={shoe.modelNumber || '-'} />
+                  <DetailCard label="상태" value={shoe.status === 'APPROVED_UNTIL' ? '제한적 승인' : '승인'} />
+                  {shoe.releaseDate && <DetailCard label="출시" value={formatDate(shoe.releaseDateExp)} />}
                 </div>
               </div>
 
               {/* Disciplines */}
               <div className="modal-stagger-5">
                 <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                  Disciplines
+                  종목
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {shoe.disciplines.map((disc) => (
@@ -296,7 +296,7 @@ export default function ShoeModal({
               {shoe.alternativeModelNumbers && (
                 <div className="modal-stagger-6">
                   <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                    Alternative Models
+                    대체 모델
                   </p>
                   <div className="bg-black/30 rounded-xl p-4 border border-white/[0.06]">
                     <code className="text-sm text-zinc-400 font-mono break-all">
@@ -315,7 +315,7 @@ export default function ShoeModal({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-indigo-400 transition-colors duration-200"
                 >
-                  <span>View on World Athletics</span>
+                  <span>World Athletics에서 보기</span>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"

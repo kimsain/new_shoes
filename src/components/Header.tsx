@@ -55,7 +55,7 @@ export default function Header() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
             </span>
-            <span className="text-xs font-medium text-indigo-300">Synced</span>
+            <span className="text-xs font-medium text-indigo-300">동기화됨</span>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default function Header() {
             rel="noopener noreferrer"
             className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} text-sm text-zinc-400 ${BUTTON.secondary.hover} transition-all duration-300`}
           >
-            <span className="hidden sm:inline">Source</span>
+            <span className="hidden sm:inline">원본</span>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
