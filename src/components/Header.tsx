@@ -48,17 +48,6 @@ export default function Header() {
           </div>
         </a>
 
-        {/* Center - Status (absolutely positioned for true center) */}
-        <div className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            <span className="text-xs font-medium text-indigo-300">동기화됨</span>
-          </div>
-        </div>
-
         {/* Right - Links */}
         <div className="flex items-center gap-3 ml-auto">
           <a

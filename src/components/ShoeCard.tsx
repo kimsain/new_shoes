@@ -136,11 +136,10 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
 
         {/* D-day Status Box */}
         <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <span className={`text-sm font-semibold ${status.colors.text}`}>
               {status.text}
             </span>
-            <span className={`w-2 h-2 rounded-full ${status.colors.dot}`} />
           </div>
 
           {/* Progress bar */}

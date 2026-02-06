@@ -2,37 +2,19 @@ import { DATA_URL } from '@/constants';
 
 interface FooterProps {
   lastUpdated: string;
-  stats: {
-    total: number;
-    brandCount: number;
-  };
 }
 
-export default function Footer({ lastUpdated, stats }: FooterProps) {
+export default function Footer({ lastUpdated }: FooterProps) {
   return (
     <footer className="relative pt-10 pb-[calc(2rem+env(safe-area-inset-bottom))] px-4">
       {/* Glow gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
 
-      <div className="max-w-[1400px] mx-auto">
-        {/* Brand */}
-        <div className="text-center mb-6">
-          <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-3">
-            Development Shoes
-          </p>
-
-          {/* Status */}
-          <div className="inline-flex items-center gap-2 text-xs text-zinc-500 mb-4">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              동기화됨
-            </span>
-            <span className="text-zinc-700">·</span>
-            <span>{stats.total}개</span>
-            <span className="text-zinc-700">·</span>
-            <span>업데이트 {lastUpdated}</span>
-          </div>
-        </div>
+      <div className="max-w-[1400px] mx-auto text-center">
+        {/* Update time */}
+        <p className="text-xs text-zinc-600 mb-6">
+          업데이트 {lastUpdated}
+        </p>
 
         {/* Links */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
@@ -61,7 +43,7 @@ export default function Footer({ lastUpdated, stats }: FooterProps) {
         </div>
 
         {/* Disclaimer */}
-        <p className="text-center text-xs text-zinc-600 max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs text-zinc-600 max-w-xl mx-auto leading-relaxed">
           개발 신발은 World Athletics 승인 대기 중인 프로토타입입니다.
           <br />
           WAS 이벤트 및 올림픽에서는 사용할 수 없습니다.

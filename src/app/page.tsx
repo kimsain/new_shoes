@@ -2,11 +2,10 @@ import ShoeGrid from '@/components/ShoeGrid';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import Footer from '@/components/Footer';
-import { fetchDevelopmentShoes, getShoeStats } from '@/lib/api';
+import { fetchDevelopmentShoes } from '@/lib/api';
 
 export default async function Home() {
   const shoes = await fetchDevelopmentShoes();
-  const stats = getShoeStats(shoes);
   const lastUpdated = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   return (
@@ -14,7 +13,7 @@ export default async function Home() {
       <Header />
 
       {/* Hero Section */}
-      <HeroSection stats={stats} />
+      <HeroSection />
 
       {/* Main Content */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-16">
@@ -26,7 +25,7 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <Footer lastUpdated={lastUpdated} stats={stats} />
+      <Footer lastUpdated={lastUpdated} />
     </main>
   );
 }

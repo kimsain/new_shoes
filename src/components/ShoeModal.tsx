@@ -7,7 +7,6 @@ import { IMAGE_BASE_URL } from '@/constants';
 import { formatDate, getDetailedStatusInfo, getRemainingDays } from '@/utils/date';
 import { getDisplayName } from '@/utils/displayNames';
 import { getProgressPercent } from '@/utils/progress';
-import { DATA_URL } from '@/constants';
 
 interface ShoeModalProps {
   shoe: Shoe;
@@ -268,9 +267,8 @@ export default function ShoeModal({
                 <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
                   상세 정보
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <DetailCard label="모델" value={shoe.modelNumber || '-'} />
-                  <DetailCard label="상태" value={shoe.status === 'APPROVED_UNTIL' ? '제한적 승인' : '승인'} />
                   {shoe.releaseDate && <DetailCard label="출시" value={formatDate(shoe.releaseDateExp)} />}
                 </div>
               </div>
@@ -306,38 +304,17 @@ export default function ShoeModal({
                 </div>
               )}
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-                {/* External link */}
-                <a
-                  href={DATA_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-indigo-400 transition-colors duration-200"
-                >
-                  <span>World Athletics에서 보기</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-
-                {/* Keyboard hints */}
-                <div className="hidden sm:flex items-center gap-3 text-xs text-zinc-600">
-                  {(hasPrev || hasNext) && (
-                    <span className="flex items-center gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">←</kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">→</kbd>
-                    </span>
-                  )}
+              {/* Keyboard hints - desktop only */}
+              <div className="hidden sm:flex items-center justify-end gap-3 pt-4 border-t border-white/[0.06] text-xs text-zinc-600">
+                {(hasPrev || hasNext) && (
                   <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">ESC</kbd>
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">←</kbd>
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">→</kbd>
                   </span>
-                </div>
+                )}
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">ESC</kbd>
+                </span>
               </div>
             </div>
           </div>
