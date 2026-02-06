@@ -579,7 +579,6 @@ body {
 .break-words {
   word-break: break-word;
   overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 .tabular-nums {

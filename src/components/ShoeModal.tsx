@@ -139,7 +139,7 @@ export default function ShoeModal({
                 <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500">
                   {shoe.manufacturerName}
                 </p>
-                <h2 id="modal-title" className="text-white font-medium">
+                <h2 id="modal-title" className="text-lg text-white font-medium break-words">
                   {shoe.productName}
                 </h2>
               </div>
@@ -235,7 +235,7 @@ export default function ShoeModal({
             {/* Info Section */}
             <div className="p-6 lg:p-8 space-y-6">
               {/* 유형 */}
-              <p className="text-zinc-500 modal-stagger-2">{shoe.shoeType}</p>
+              <p className="text-sm text-zinc-500 modal-stagger-2">{shoe.shoeType}</p>
 
               {/* Status Card with Progress Bar */}
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] modal-stagger-3">
@@ -297,7 +297,7 @@ export default function ShoeModal({
                     대체 모델
                   </p>
                   <div className="bg-black/30 rounded-xl p-4 border border-white/[0.06]">
-                    <code className="text-sm text-zinc-400 font-mono break-all">
+                    <code className="text-sm text-zinc-400 font-mono break-words">
                       {shoe.alternativeModelNumbers}
                     </code>
                   </div>
