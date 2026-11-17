@@ -103,7 +103,7 @@ export default function ShoeModal({
   return (
     <div className="fixed inset-0 z-[70]">
       <div
-        className={`absolute inset-0 bg-black/75 backdrop-blur-lg ${closing ? 'overlay-out' : 'overlay-in'}`}
+        className={`absolute inset-0 bg-black/75 lg:backdrop-blur-lg ${closing ? 'overlay-out' : 'overlay-in'}`}
         onClick={onClose}
       />
 

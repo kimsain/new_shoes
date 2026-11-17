@@ -57,7 +57,7 @@ src/
 | `ShoeModal` | Detail: big photo (shared-element morph from the card), countdown, certification timeline, details, ←→/swipe navigation, zoom, focus trap |
 | `FilterPanel` | One component: right drawer on desktop, bottom sheet on mobile (drag to dismiss). Sort lives here on mobile |
 | `BrandRail` / `StatusSegment` / `SortMenu` / `SearchBar` | Toolbar pieces. Search focuses with `/` |
-| `Header` / `Footer` / `ScrollToTop` | Fixed header (hides on scroll down on mobile), footer wordmark, back-to-top with scroll progress ring |
+| `Header` / `Footer` / `ScrollToTop` | Fixed header (hides on scroll down on mobile), footer wordmark, back-to-top with scroll progress ring (desktop only) |
 
 ### Responsive Layouts
 
@@ -160,6 +160,7 @@ Font: Pretendard Variable from jsDelivr (dynamic subset) for everything. No seri
 - **React.memo**: ShoeCard re-renders only when `today`, `isNew`, `lifted` or `onOpen` change. `onOpen` is stable and takes the shoe id. `today` comes from `useToday(renderedAt)` so D-day hydrates with the server render time, then switches to the browser's day
 - **Image optimization**: WebP at card size instead of multi-MB originals; ambient backdrop reuses the same URL
 - **Animations**: only `transform` and `opacity` move. No animated `filter: blur`
+- **Mobile (measured with 4x CPU throttle)**: the scroll progress ring repainted the page every scroll frame, so it runs only on fine pointers. Header, toolbar and the detail overlay drop `backdrop-blur` below `lg` and use a more opaque background. Filter View Transitions on touch devices capture only the cards in view (`data-vt-move`), which halves the tap-to-animation delay
 
 ## UX Features
 

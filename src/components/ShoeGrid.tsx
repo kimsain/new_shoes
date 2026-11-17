@@ -32,6 +32,19 @@ interface ShoeGridProps {
 
 const HEADER_HEIGHT = 64;
 
+/**
+ * 필터 전환에서 화면 안 카드에 data-vt-move를 붙인다. 터치 기기에서는 이 카드만 따로 움직인다(globals.css).
+ * 89장을 모두 캡처하면 휴대폰에서 탭한 뒤 전환이 시작되기까지 두 배 가까이 걸린다.
+ * keep이면 전환 전에 붙인 카드도 그대로 둬서, 화면 밖으로 밀려나는 카드도 새 자리로 움직인다.
+ */
+function markCardsInView(keep: boolean) {
+  document.querySelectorAll<HTMLElement>('.shoe-card').forEach((card) => {
+    const rect = card.getBoundingClientRect();
+    if (rect.bottom > 0 && rect.top < window.innerHeight) card.dataset.vtMove = '';
+    else if (!keep) delete card.dataset.vtMove;
+  });
+}
+
 function isInViewport(el: HTMLElement): boolean {
   const rect = el.getBoundingClientRect();
   return rect.bottom > HEADER_HEIGHT && rect.top < window.innerHeight;
@@ -167,7 +180,11 @@ export default function ShoeGrid({ shoes, renderedAt }: ShoeGridProps) {
   // ---------- 필터: 목록 밖에서 바꿀 때는 카드가 새 자리로 미끄러진다 ----------
 
   const withTransition = useCallback((update: () => void) => {
-    runViewTransition('filter', () => flushSync(update));
+    markCardsInView(false);
+    runViewTransition('filter', () => {
+      flushSync(update);
+      markCardsInView(true);
+    });
   }, []);
 
   const { toggleBrand, toggleDiscipline, toggleType, setStatusFilter, setSortBy, clearAllFilters } = filters;
@@ -228,7 +245,7 @@ export default function ShoeGrid({ shoes, renderedAt }: ShoeGridProps) {
 
       {/* 상단에 붙는 도구 막대 */}
       <div className="catalog-toolbar sticky top-16 z-40 -mx-4 mt-5 px-4 py-3 sm:-mx-6 sm:px-6" data-stuck={stuck}>
-        <div className="catalog-toolbar-bg absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 border-b border-line bg-canvas/80 backdrop-blur-xl backdrop-saturate-150" />
+        <div className="catalog-toolbar-bg absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 border-b border-line bg-canvas/95 lg:bg-canvas/80 lg:backdrop-blur-xl lg:backdrop-saturate-150" />
         <div className="relative flex items-center gap-2 lg:gap-3">
           <SearchBar
             searchInput={search.searchInput}

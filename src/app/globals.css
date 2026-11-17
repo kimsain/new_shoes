@@ -483,6 +483,13 @@ html[data-vt="filter"] .shoe-card {
   view-transition-name: var(--vt-name);
 }
 
+/* 터치 기기에서는 화면 안 카드만 따로 움직인다 (ShoeGrid의 markCardsInView). 89장을 모두 캡처하면 반응이 두 배 늦다 */
+@media (pointer: coarse) {
+  html[data-vt="filter"] .shoe-card:not([data-vt-move]) {
+    view-transition-name: none;
+  }
+}
+
 .shoe-card-inner {
   transition:
     transform 300ms var(--ease-out),
@@ -679,10 +686,13 @@ html.js .reveal:not([data-revealed]) .bar-fill {
   stroke-dashoffset: 100;
 }
 
+/* 선 길이를 바꾸는 애니메이션이라 스크롤 프레임마다 페이지를 다시 그린다. 휴대폰에서는 끈다 */
 @supports (animation-timeline: scroll()) {
-  .progress-ring {
-    animation: ring-fill linear both;
-    animation-timeline: scroll(root);
+  @media (hover: hover) and (pointer: fine) {
+    .progress-ring {
+      animation: ring-fill linear both;
+      animation-timeline: scroll(root);
+    }
   }
 }
 

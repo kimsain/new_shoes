@@ -35,7 +35,7 @@ export default function Header() {
 
   return (
     <header className="site-header fixed inset-x-0 top-0 z-50" data-scrolled={scrolled}>
-      <div className="site-header-bg absolute inset-0 border-b border-line bg-canvas/75 backdrop-blur-xl backdrop-saturate-150" />
+      <div className="site-header-bg absolute inset-0 border-b border-line bg-canvas/95 lg:bg-canvas/75 lg:backdrop-blur-xl lg:backdrop-saturate-150" />
       <div className="relative mx-auto flex h-16 max-w-[1400px] items-center px-4 sm:px-6">
         <a href="#top" className="group flex items-center gap-2.5" aria-label="DevShoes 처음으로">
           <LogoMark className="h-8 w-8 transition-transform duration-300 ease-spring group-hover:rotate-[-8deg]" />
