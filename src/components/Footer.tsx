@@ -1,4 +1,5 @@
-import { DATA_URL } from '@/constants';
+import { DATA_URL, GITHUB_URL } from '@/constants';
+import { ArrowUpRightIcon, LogoMark } from './icons';
 
 interface FooterProps {
   lastUpdated: string;
@@ -6,49 +7,48 @@ interface FooterProps {
 
 export default function Footer({ lastUpdated }: FooterProps) {
   return (
-    <footer className="relative pt-10 pb-[calc(2rem+env(safe-area-inset-bottom))] px-4">
-      {/* Glow gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-
-      <div className="max-w-[1400px] mx-auto text-center">
-        {/* Update time */}
-        <p className="text-xs text-zinc-600 mb-6">
-          업데이트 {lastUpdated}
-        </p>
-
-        {/* Links */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <a
-            href="https://github.com/kimsain/new_shoes"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-sm text-zinc-400 hover:text-white hover:border-white/[0.12] transition-all duration-300"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z" />
-            </svg>
-            GitHub
-          </a>
-          <a
-            href={DATA_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-sm text-zinc-400 hover:text-white hover:border-white/[0.12] transition-all duration-300"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
-            원본 데이터
-          </a>
+    <footer className="relative overflow-hidden border-t border-line">
+      <div className="relative mx-auto grid max-w-[1400px] gap-10 px-4 pb-10 pt-14 sm:px-6 lg:grid-cols-12">
+        <div className="lg:col-span-6">
+          <div className="flex items-center gap-2.5">
+            <LogoMark className="h-8 w-8" />
+            <span className="text-[16px] font-bold tracking-[-0.03em] text-fg">DevShoes</span>
+          </div>
+          <p className="mt-5 max-w-[440px] text-[14px] leading-[1.7] text-fg-3 break-words">
+            개발 신발은 World Athletics 승인 대기 중인 프로토타입입니다. WAS 이벤트 및 올림픽에서는 사용할 수 없습니다.
+          </p>
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-zinc-600 max-w-xl mx-auto leading-relaxed">
-          개발 신발은 World Athletics 승인 대기 중인 프로토타입입니다.
-          <br />
-          WAS 이벤트 및 올림픽에서는 사용할 수 없습니다.
-        </p>
+        <div className="flex flex-col gap-6 lg:col-span-6 lg:items-end">
+          <nav className="flex flex-wrap gap-2" aria-label="푸터 링크">
+            <FooterLink href={DATA_URL}>원본 목록</FooterLink>
+            <FooterLink href={GITHUB_URL}>GitHub</FooterLink>
+          </nav>
+          <p className="text-[13px] tabular-nums text-fg-4">업데이트 {lastUpdated}</p>
+        </div>
+      </div>
+
+      {/* 큰 워드마크: 아래가 잘려 바닥에 깔린 듯 보인다 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none mx-auto -mb-[0.2em] max-w-[1400px] select-none px-2 text-center text-[clamp(72px,19vw,280px)] font-black leading-none tracking-[-0.06em] bg-gradient-to-b from-white/[0.09] to-white/0 bg-clip-text text-transparent"
+      >
+        DevShoes
       </div>
     </footer>
+  );
+}
+
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-4 text-[14px] font-medium text-fg-2 transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg"
+    >
+      {children}
+      <ArrowUpRightIcon className="h-3.5 w-3.5 text-fg-3" />
+    </a>
   );
 }

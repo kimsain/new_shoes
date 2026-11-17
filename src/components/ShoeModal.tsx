@@ -1,395 +1,467 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type TouchEvent } from 'react';
 import Image from 'next/image';
 import { Shoe } from '@/types/shoe';
-import { IMAGE_BASE_URL } from '@/constants';
-import { formatDate, getDetailedStatusInfo, getRemainingDays } from '@/utils/date';
+import { CARD_IMAGE_SIZES, IMAGE_BASE_URL } from '@/constants';
+import { formatDate, formatShortDate, getDaysBetween, getDaysSince, getStatusInfo } from '@/utils/date';
 import { getDisplayName } from '@/utils/displayNames';
-import { getProgressPercent } from '@/utils/progress';
+import { getElapsedRatio } from '@/utils/progress';
+import CountUp from './CountUp';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, ExpandIcon, ImageOffIcon } from './icons';
 
 interface ShoeModalProps {
   shoe: Shoe;
+  index: number;
+  total: number;
+  isNew: boolean;
+  /** View Transition을 쓰지 못할 때의 CSS 닫힘 애니메이션 */
+  closing: boolean;
+  direction: 'left' | 'right' | null;
   onClose: () => void;
-  onPrev?: () => void;
-  onNext?: () => void;
-  hasPrev?: boolean;
-  hasNext?: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
+
+const FOCUSABLE = 'button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])';
+const SWIPE_THRESHOLD = 50;
 
 export default function ShoeModal({
   shoe,
+  index,
+  total,
+  isNew,
+  closing,
+  direction,
   onClose,
   onPrev,
   onNext,
-  hasPrev = false,
-  hasNext = false,
+  hasPrev,
+  hasNext,
 }: ShoeModalProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null);
-  const [transitionKey, setTransitionKey] = useState(shoe.productApplicationuuid);
-  const status = getDetailedStatusInfo(shoe.certificationEndDateExp);
-  const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
-  const progressPercent = getProgressPercent(remainingDays);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const id = shoe.productApplicationuuid;
+  const navClass = direction === 'left' ? 'nav-from-left' : direction === 'right' ? 'nav-from-right' : '';
 
-  // Status bar color - uses same color as status.bar from tokens
-  const statusBarColor = status.bg.includes('red') ? 'bg-red-500'
-    : status.bg.includes('amber') ? 'bg-amber-500'
-    : status.bg.includes('sky') ? 'bg-sky-500'
-    : status.bg.includes('emerald') ? 'bg-emerald-500'
-    : 'bg-zinc-500';
+  // 스크롤 잠금과 첫 포커스
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.overflow = 'hidden';
+    panelRef.current?.focus({ preventScroll: true });
+    return () => {
+      root.style.overflow = '';
+    };
+  }, []);
 
-  // 모달 닫기 애니메이션
-  const handleClose = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-    }, 200);
-  }, [onClose]);
-
-  // 방향 전환 핸들러
-  const handlePrevWithTransition = useCallback(() => {
-    if (hasPrev && onPrev) {
-      setTransitionDirection('left');
-      onPrev();
-    }
-  }, [hasPrev, onPrev]);
-
-  const handleNextWithTransition = useCallback(() => {
-    if (hasNext && onNext) {
-      setTransitionDirection('right');
-      onNext();
-    }
-  }, [hasNext, onNext]);
-
-  // 키보드 이벤트 핸들러
+  // 키보드: ESC, 좌우 이동, Tab을 패널 안에 가둔다
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isZoomed) {
-        if (e.key === 'Escape') {
-          setIsZoomed(false);
-        }
+      if (zoomed) {
+        if (e.key === 'Escape') setZoomed(false);
         return;
       }
-
-      switch (e.key) {
-        case 'Escape':
-          handleClose();
-          break;
-        case 'ArrowLeft':
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowLeft' && hasPrev) {
+        e.preventDefault();
+        onPrev();
+      } else if (e.key === 'ArrowRight' && hasNext) {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === 'Tab' && panelRef.current) {
+        const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+          (el) => el.offsetParent !== null
+        );
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) {
           e.preventDefault();
-          handlePrevWithTransition();
-          break;
-        case 'ArrowRight':
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
           e.preventDefault();
-          handleNextWithTransition();
-          break;
+          first.focus();
+        }
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [zoomed, hasPrev, hasNext, onClose, onPrev, onNext]);
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [handleClose, handlePrevWithTransition, handleNextWithTransition, isZoomed]);
-
-  // 신발 변경 시 상태 초기화 + 전환 애니메이션 트리거
-  useEffect(() => {
-    setImageLoaded(false);
-    setImageError(false);
-    setIsZoomed(false);
-    setTransitionKey(shoe.productApplicationuuid);
-  }, [shoe.productApplicationuuid]);
-
-  const toggleZoom = () => {
-    if (shoe.imageDocumentuuid && !imageError) {
-      setIsZoomed(!isZoomed);
-    }
-  };
+  const counter = (
+    <span className="tabular-nums text-[13px] font-medium text-fg-2">
+      <span className="text-fg">{index + 1}</span> / {total}
+    </span>
+  );
 
   return (
-    <>
-      {/* Main Modal */}
+    <div className="fixed inset-0 z-[70]">
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
-          isClosing ? 'animate-fade-out' : 'animate-in fade-in duration-200'
-        }`}
-        style={{ background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(16px)' }}
-        onClick={handleClose}
-      >
+        className={`absolute inset-0 bg-black/75 backdrop-blur-lg ${closing ? 'overlay-out' : 'overlay-in'}`}
+        onClick={onClose}
+      />
+
+      <div className="pointer-events-none absolute inset-0 flex items-stretch justify-center lg:items-center lg:p-8">
         <div
-          className={`relative bg-[#0a0a0a] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-white/[0.06] shadow-2xl ${
-            isClosing ? 'modal-zoom-exit' : 'modal-zoom-enter'
-          }`}
-          onClick={(e) => e.stopPropagation()}
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="modal-title"
+          aria-labelledby="detail-title"
+          tabIndex={-1}
+          className={`detail-panel pointer-events-auto relative flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-surface outline-none lg:grid lg:h-[min(760px,calc(100svh-64px))] lg:max-w-[1180px] lg:grid-cols-[1.12fr_1fr] lg:overflow-hidden lg:rounded-[28px] lg:border lg:border-line-strong lg:shadow-[0_40px_120px_-30px_rgb(0_0_0/0.9)] ${
+            closing ? 'popup-out' : 'popup-in'
+          }`}
         >
-          {/* Top Navigation Bar */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
-            <div className="flex items-center gap-3">
-              {hasPrev && onPrev && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrevWithTransition();
-                  }}
-                  aria-label="Previous shoe"
-                  className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500">
-                  {shoe.manufacturerName}
-                </p>
-                <h2 id="modal-title" className="text-lg text-white font-medium break-words">
-                  {shoe.productName}
-                </h2>
+          {/* 모바일 상단 막대: 사진 위에 떠 있다 */}
+          <div className="sticky top-0 z-20 -mb-14 flex h-14 shrink-0 items-center justify-between px-3 pt-[env(safe-area-inset-top)] lg:hidden">
+            <span className="rounded-full bg-black/55 px-3 py-1.5 backdrop-blur-md">{counter}</span>
+            <IconButton label="닫기" onClick={onClose} className="bg-black/55 backdrop-blur-md">
+              <CloseIcon className="h-[18px] w-[18px]" />
+            </IconButton>
+          </div>
+
+          <DetailMedia
+            key={`media-${id}`}
+            shoe={shoe}
+            navClass={navClass}
+            onZoom={() => setZoomed(true)}
+            onSwipe={(dir) => (dir === 'left' ? hasNext && onNext() : hasPrev && onPrev())}
+          />
+
+          <div className="flex min-h-0 flex-col">
+            <div className="hidden items-center justify-between px-8 pb-2 pt-6 lg:flex">
+              {counter}
+              <div className="flex items-center gap-1.5">
+                <IconButton label="이전 신발" onClick={onPrev} disabled={!hasPrev}>
+                  <ChevronLeftIcon className="h-[18px] w-[18px]" />
+                </IconButton>
+                <IconButton label="다음 신발" onClick={onNext} disabled={!hasNext}>
+                  <ChevronRightIcon className="h-[18px] w-[18px]" />
+                </IconButton>
+                <span className="mx-1 h-5 w-px bg-line-strong" aria-hidden="true" />
+                <IconButton label="닫기" onClick={onClose}>
+                  <CloseIcon className="h-[18px] w-[18px]" />
+                </IconButton>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {hasNext && onNext && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNextWithTransition();
-                  }}
-                  aria-label="Next shoe"
-                  className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              )}
-              <button
-                onClick={handleClose}
-                aria-label="Close"
-                className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            <div className="flex-1 px-5 pb-8 pt-6 lg:overflow-y-auto lg:px-8 lg:pb-8 lg:pt-4">
+              <DetailInfo key={`info-${id}`} shoe={shoe} isNew={isNew} navClass={navClass} />
+            </div>
+
+            <div className="hidden items-center justify-end gap-4 border-t border-line px-8 py-4 text-[12px] text-fg-3 lg:flex">
+              <span className="flex items-center gap-1.5">
+                <Kbd>←</Kbd>
+                <Kbd>→</Kbd>
+                이동
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Kbd>ESC</Kbd>
+                닫기
+              </span>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
-            <div
-              key={transitionKey}
-              className={
-                transitionDirection === 'left'
-                  ? 'modal-crossfade-from-left'
-                  : transitionDirection === 'right'
-                  ? 'modal-crossfade-from-right'
-                  : ''
-              }
-              onAnimationEnd={() => setTransitionDirection(null)}
+          {/* 모바일 하단 이동 막대 */}
+          <div className="sticky bottom-0 z-20 mt-auto flex gap-2 border-t border-line bg-surface/90 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl lg:hidden">
+            <button
+              type="button"
+              onClick={onPrev}
+              disabled={!hasPrev}
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-control text-[15px] font-medium text-fg transition-opacity disabled:opacity-35"
             >
-            {/* Image Section */}
-            <div
-              className="relative aspect-[16/9] bg-black/40 flex items-center justify-center cursor-zoom-in modal-stagger-1"
-              onClick={toggleZoom}
+              <ChevronLeftIcon className="h-4 w-4" />
+              이전
+            </button>
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!hasNext}
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-control text-[15px] font-medium text-fg transition-opacity disabled:opacity-35"
             >
-              {!imageLoaded && !imageError && shoe.imageDocumentuuid && (
-                <div className="absolute inset-0 skeleton">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl font-bold text-zinc-800/30 uppercase tracking-widest">
-                      {shoe.manufacturerName.slice(0, 2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {shoe.imageDocumentuuid && !imageError ? (
-                <Image
-                  src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
-                  alt={shoe.productName}
-                  fill
-                  className={`object-contain p-12 transition-all duration-500 ${
-                    imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                  } hover:scale-105`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                  priority
-                  unoptimized
-                />
-              ) : (
-                <div className="text-center">
-                  <div className="w-24 h-24 mx-auto rounded-3xl bg-zinc-800/50 flex items-center justify-center mb-4">
-                    <svg className="w-12 h-12 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-zinc-600 text-sm">이미지 없음</p>
-                </div>
-              )}
-
-              {/* Zoom hint */}
-              {shoe.imageDocumentuuid && !imageError && imageLoaded && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm text-zinc-400 text-xs flex items-center gap-1.5">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                  클릭하여 확대
-                </div>
-              )}
-            </div>
-
-            {/* Glow line separator */}
-            <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
-
-            {/* Info Section */}
-            <div className="p-6 lg:p-8 space-y-6">
-              {/* 유형 */}
-              <p className="text-sm text-zinc-500 modal-stagger-2">{shoe.shoeType}</p>
-
-              {/* Status Card with Progress Bar */}
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] modal-stagger-3">
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`text-lg font-semibold ${status.color}`}>
-                    {remainingDays !== null && remainingDays > 0 ? `D-${remainingDays}` : status.text}
-                  </span>
-                  <span className={`w-2.5 h-2.5 rounded-full ${statusBarColor}`} />
-                </div>
-
-                {/* Progress bar */}
-                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-3">
-                  <div
-                    className={`h-full rounded-full ${statusBarColor} transition-all duration-700 ease-out`}
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-
-                {/* Date range */}
-                {shoe.certificationStartDateExp && shoe.certificationEndDateExp && (
-                  <p className="text-sm text-zinc-500">
-                    {formatDate(shoe.certificationStartDateExp)} → {formatDate(shoe.certificationEndDateExp)}
-                  </p>
-                )}
-              </div>
-
-              {/* Details Grid */}
-              <div className="modal-stagger-4">
-                <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                  상세 정보
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <DetailCard label="모델" value={shoe.modelNumber || '-'} />
-                  {shoe.releaseDate && <DetailCard label="출시" value={formatDate(shoe.releaseDateExp)} />}
-                </div>
-              </div>
-
-              {/* Disciplines */}
-              <div className="modal-stagger-5">
-                <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                  종목
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {shoe.disciplines.map((disc) => (
-                    <span
-                      key={disc.name}
-                      className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.06] text-zinc-300 rounded-lg text-sm transition-colors duration-200"
-                    >
-                      {getDisplayName(disc.name)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Alternative Model Numbers */}
-              {shoe.alternativeModelNumbers && (
-                <div className="modal-stagger-6">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500 mb-3">
-                    대체 모델
-                  </p>
-                  <div className="bg-black/30 rounded-xl p-4 border border-white/[0.06]">
-                    <code className="text-sm text-zinc-400 font-mono break-words">
-                      {shoe.alternativeModelNumbers}
-                    </code>
-                  </div>
-                </div>
-              )}
-
-              {/* Keyboard hints - desktop only */}
-              <div className="hidden sm:flex items-center justify-end gap-3 pt-4 border-t border-white/[0.06] text-xs text-zinc-600">
-                {(hasPrev || hasNext) && (
-                  <span className="flex items-center gap-1">
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">←</kbd>
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">→</kbd>
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-500">ESC</kbd>
-                </span>
-              </div>
-            </div>
-            </div>
+              다음
+              <ChevronRightIcon className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Image Zoom Overlay */}
-      {isZoomed && shoe.imageDocumentuuid && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center zoom-overlay cursor-zoom-out"
-          onClick={() => setIsZoomed(false)}
-        >
-          <button
-            onClick={() => setIsZoomed(false)}
-            aria-label="Close zoom"
-            className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
-            <Image
-              src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
-              alt={shoe.productName}
-              fill
-              className="object-contain"
-              unoptimized
-            />
-          </div>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
-            <p className="text-white font-semibold mb-1">{shoe.productName}</p>
-            <p className="text-zinc-400 text-sm">{shoe.manufacturerName}</p>
-          </div>
-        </div>
+      {zoomed && shoe.imageDocumentuuid && (
+        <ZoomOverlay shoe={shoe} onClose={() => setZoomed(false)} />
       )}
-    </>
+    </div>
   );
 }
 
-function DetailCard({ label, value }: { label: string; value: string }) {
+/**
+ * 상세 사진. 카드와 같은 sizes로 이미 받은 사진을 먼저 깔고, 큰 사진이 오면 위에 덮는다.
+ * view-transition-name이 카드 사진과 같아서 열고 닫을 때 사진이 제자리로 날아간다.
+ */
+function DetailMedia({
+  shoe,
+  navClass,
+  onZoom,
+  onSwipe,
+}: {
+  shoe: Shoe;
+  navClass: string;
+  onZoom: () => void;
+  onSwipe: (direction: 'left' | 'right') => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const src = shoe.imageDocumentuuid ? `${IMAGE_BASE_URL}${shoe.imageDocumentuuid}` : null;
+
+  const handleTouchStart = (e: TouchEvent) => {
+    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!touch.current) return;
+    const dx = e.changedTouches[0].clientX - touch.current.x;
+    const dy = e.changedTouches[0].clientY - touch.current.y;
+    touch.current = null;
+    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < 40) onSwipe(dx < 0 ? 'left' : 'right');
+  };
+
   return (
-    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-      <p className="text-[10px] font-medium uppercase tracking-[0.05em] text-zinc-600 mb-1">{label}</p>
-      <p className="text-sm text-white font-medium truncate" title={value}>
-        {value}
-      </p>
+    <div className="shrink-0 p-2 lg:h-full lg:p-3 lg:pr-0">
+      <div
+        className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-raised lg:aspect-auto lg:h-full"
+        style={{ viewTransitionName: 'shoe-media' } as CSSProperties}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {src && !failed ? (
+          <div className={`absolute inset-0 ${navClass}`}>
+            <Image
+              src={src}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes={CARD_IMAGE_SIZES}
+              loading="eager"
+              className="scale-125 object-cover opacity-90 blur-2xl saturate-150"
+            />
+            <Image
+              src={src}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes={CARD_IMAGE_SIZES}
+              loading="eager"
+              className="object-contain p-5 lg:p-10"
+            />
+            <Image
+              src={src}
+              alt={`${shoe.manufacturerName} ${shoe.productName}`}
+              fill
+              sizes="(min-width: 1024px) 620px, 100vw"
+              loading="eager"
+              fetchPriority="high"
+              className="object-contain p-5 transition-opacity duration-300 ease-out lg:p-10"
+              style={{ opacity: loaded ? 1 : 0 }}
+              onLoad={() => setLoaded(true)}
+              onError={() => setFailed(true)}
+            />
+          </div>
+        ) : (
+          <div className="absolute inset-0 grid place-items-center text-fg-4">
+            <span className="flex flex-col items-center gap-2 text-[13px]">
+              <ImageOffIcon className="h-8 w-8" />
+              사진 없음
+            </span>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute inset-0 rounded-[20px] ring-1 ring-inset ring-white/[0.06]" />
+
+        {src && !failed && (
+          <button
+            type="button"
+            onClick={onZoom}
+            className="absolute bottom-3 right-3 flex h-9 items-center gap-1.5 rounded-full bg-black/55 px-3.5 text-[13px] font-medium text-fg backdrop-blur-md transition-colors duration-150 hover:bg-black/75"
+          >
+            <ExpandIcon className="h-3.5 w-3.5" />
+            크게 보기
+          </button>
+        )}
+      </div>
     </div>
+  );
+}
+
+function DetailInfo({ shoe, isNew, navClass }: { shoe: Shoe; isNew: boolean; navClass: string }) {
+  const status = getStatusInfo(shoe.certificationEndDateExp);
+  const remaining = status.remainingDays;
+  const elapsed = getElapsedRatio(shoe.certificationStartDateExp, shoe.certificationEndDateExp);
+  const windowDays = getDaysBetween(shoe.certificationStartDateExp, shoe.certificationEndDateExp);
+  const elapsedDays = getDaysSince(shoe.certificationStartDateExp);
+
+  return (
+    <div className={navClass}>
+      <p className="text-[13px] font-medium text-fg-3">{shoe.manufacturerName}</p>
+      <h2
+        id="detail-title"
+        className="mt-2 text-[28px] font-bold leading-[1.15] tracking-[-0.035em] text-fg break-words lg:text-[34px]"
+      >
+        {shoe.productName}
+      </h2>
+
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {isNew && <Tag className="bg-volt text-volt-ink">NEW</Tag>}
+        <Tag>{shoe.shoeType}</Tag>
+        {shoe.disciplines.map((d) => (
+          <Tag key={d.name}>{getDisplayName(d.name)}</Tag>
+        ))}
+      </div>
+
+      {/* 남은 기간 */}
+      <div className="mt-7 rounded-[20px] border border-line bg-raised/60 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[13px] text-fg-3">인증 만료까지</p>
+            <p
+              className={`mt-2 text-[56px] font-extrabold leading-none tracking-[-0.05em] lg:text-[64px] ${status.colors.emphasis}`}
+            >
+              {remaining !== null && remaining > 0 ? (
+                <>
+                  <CountUp value={remaining} duration={700} delay={120} />
+                  <span className="ml-1 text-[20px] font-bold tracking-[-0.02em] text-fg-3">일</span>
+                </>
+              ) : (
+                <span className="text-[40px]">{status.text}</span>
+              )}
+            </p>
+          </div>
+          <span className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${status.colors.chip}`}>
+            {status.colors.label}
+          </span>
+        </div>
+
+        {elapsed !== null && (
+          <div className="mt-6">
+            <div className="mb-2.5 flex justify-between text-[12px] text-fg-3">
+              <span>
+                인증 기간 <span className="tabular-nums text-fg-2">{windowDays}일</span>
+              </span>
+              {elapsedDays !== null && elapsedDays >= 0 && (
+                <span>
+                  <span className="tabular-nums text-fg-2">{elapsedDays}일</span> 지남
+                </span>
+              )}
+            </div>
+            <div className="relative h-1.5 rounded-full bg-white/[0.08]">
+              <div
+                className={`timeline-fill absolute inset-0 rounded-full ${status.colors.bar}`}
+                style={{ '--p': 1 - elapsed } as CSSProperties}
+              />
+              <div className="timeline-marker absolute inset-0" style={{ '--p': elapsed } as CSSProperties}>
+                <span className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-fg shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
+              </div>
+            </div>
+            <div className="mt-2.5 flex justify-between text-[12px] tabular-nums text-fg-3">
+              <span>{formatShortDate(shoe.certificationStartDateExp)} 시작</span>
+              <span>{formatShortDate(shoe.certificationEndDateExp)} 만료</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[16px] border border-line bg-line">
+        <Field label="모델 번호" value={shoe.modelNumber || '-'} />
+        <Field label="유형" value={shoe.shoeType} />
+        <Field label="인증 시작" value={formatDate(shoe.certificationStartDateExp)} />
+        <Field label="인증 만료" value={formatDate(shoe.certificationEndDateExp)} />
+        {shoe.releaseDateExp && <Field label="출시일" value={formatDate(shoe.releaseDateExp)} />}
+      </dl>
+
+      {shoe.alternativeModelNumbers && (
+        <div className="mt-6">
+          <p className="mb-2 text-[13px] font-semibold text-fg-3">대체 모델 번호</p>
+          <p className="rounded-[16px] border border-line bg-raised/60 p-4 text-[14px] leading-relaxed tabular-nums text-fg-2 break-words">
+            {shoe.alternativeModelNumbers}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ZoomOverlay({ shoe, onClose }: { shoe: Shoe; onClose: () => void }) {
+  return (
+    <div className="overlay-in fixed inset-0 z-[80] cursor-zoom-out bg-black/95" onClick={onClose}>
+      <div className="popup-in absolute inset-4 bottom-24 sm:inset-10 sm:bottom-28">
+        <Image
+          src={`${IMAGE_BASE_URL}${shoe.imageDocumentuuid}`}
+          alt={`${shoe.manufacturerName} ${shoe.productName}`}
+          fill
+          sizes="100vw"
+          className="object-contain"
+        />
+      </div>
+      <IconButton label="크게 보기 닫기" onClick={onClose} className="absolute right-4 top-4 bg-white/10 backdrop-blur-md sm:right-6 sm:top-6">
+        <CloseIcon className="h-5 w-5" />
+      </IconButton>
+      <div className="absolute inset-x-0 bottom-6 text-center sm:bottom-8">
+        <p className="text-[16px] font-semibold text-fg">{shoe.productName}</p>
+        <p className="mt-1 text-[13px] text-fg-3">{shoe.manufacturerName}</p>
+      </div>
+    </div>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  disabled,
+  className = '',
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      disabled={disabled}
+      className={`grid h-10 w-10 place-items-center rounded-full text-fg-2 transition-colors duration-150 hover:bg-white/[0.08] hover:text-fg disabled:opacity-30 disabled:hover:bg-transparent ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Tag({ children, className = 'bg-white/[0.06] text-fg-2' }: { children: React.ReactNode; className?: string }) {
+  return <span className={`rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none ${className}`}>{children}</span>;
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 bg-surface p-4 last:odd:col-span-2">
+      <dt className="text-[12px] text-fg-3">{label}</dt>
+      <dd className="mt-1 truncate text-[14px] font-medium text-fg" title={value}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function Kbd({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="grid h-6 min-w-6 place-items-center rounded-md border border-line-strong px-1.5 text-[11px] font-medium text-fg-2">
+      {children}
+    </kbd>
   );
 }

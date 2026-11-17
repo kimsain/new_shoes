@@ -1,114 +1,66 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { ACCENT, BUTTON } from '@/styles/tokens';
-import { DATA_URL } from '@/constants';
+import { useEffect, useRef, useState } from 'react';
+import { DATA_URL, GITHUB_URL } from '@/constants';
+import { LogoMark, ArrowUpRightIcon, GitHubIcon } from './icons';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
-  const isMobile = useRef(false);
-
-  const handleScroll = useCallback(() => {
-    const currentY = window.scrollY;
-    setScrolled(currentY > 10);
-
-    // Only hide/show on mobile
-    if (!isMobile.current) {
-      setHidden(false);
-      lastScrollY.current = currentY;
-      return;
-    }
-
-    // Always show at top of page
-    if (currentY < 50) {
-      setHidden(false);
-      lastScrollY.current = currentY;
-      return;
-    }
-
-    const delta = currentY - lastScrollY.current;
-
-    if (delta > 5) {
-      // Scrolling down - hide
-      setHidden(true);
-    } else if (delta < -5) {
-      // Scrolling up - show
-      setHidden(false);
-    }
-
-    lastScrollY.current = currentY;
-  }, []);
 
   useEffect(() => {
-    const checkMobile = () => {
-      isMobile.current = window.innerWidth < 1024;
-      // If switching to desktop, make sure header is visible
-      if (!isMobile.current) {
-        setHidden(false);
+    const root = document.documentElement;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrolled(currentY > 12);
+
+      // 모바일에서만 아래로 스크롤하면 숨긴다 (CSS가 1024px 미만에서만 적용)
+      const delta = currentY - lastScrollY.current;
+      if (currentY < 80) {
+        root.dataset.headerHidden = 'false';
+      } else if (delta > 6) {
+        root.dataset.headerHidden = 'true';
+      } else if (delta < -6) {
+        root.dataset.headerHidden = 'false';
       }
+      lastScrollY.current = currentY;
     };
 
-    checkMobile();
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, [handleScroll]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-black/80 backdrop-blur-xl border-b border-white/[0.06]'
-          : 'bg-transparent'
-      }`}
-      style={{
-        transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-      }}
-    >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center relative">
-        {/* Logo - Left */}
-        <a href="#" className="flex items-center gap-3 group">
-          <div className={`relative w-9 h-9 rounded-xl ${ACCENT.gradient.bg} flex items-center justify-center shadow-lg ${ACCENT.glow.sm} group-hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)] transition-all duration-300`}>
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-white text-sm leading-tight tracking-tight">DevShoes</span>
-            <span className="text-[10px] text-zinc-500 leading-tight">World Athletics</span>
-          </div>
+    <header className="site-header fixed inset-x-0 top-0 z-50" data-scrolled={scrolled}>
+      <div className="site-header-bg absolute inset-0 border-b border-line bg-canvas/75 backdrop-blur-xl backdrop-saturate-150" />
+      <div className="relative mx-auto flex h-16 max-w-[1400px] items-center px-4 sm:px-6">
+        <a href="#top" className="group flex items-center gap-2.5" aria-label="DevShoes 처음으로">
+          <LogoMark className="h-8 w-8 transition-transform duration-300 ease-spring group-hover:rotate-[-8deg]" />
+          <span className="text-[16px] font-bold tracking-[-0.03em] text-fg">DevShoes</span>
         </a>
 
-        {/* Right - Links */}
-        <div className="flex items-center gap-3 ml-auto">
+        <nav className="ml-auto flex items-center gap-1.5" aria-label="외부 링크">
           <a
             href={DATA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl ${BUTTON.secondary.bg} border ${BUTTON.secondary.border} text-sm text-zinc-400 ${BUTTON.secondary.hover} transition-all duration-300`}
+            className="flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-medium text-fg-2 transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg"
           >
-            <span className="hidden sm:inline">원본</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            <span>원본 목록</span>
+            <ArrowUpRightIcon className="h-3.5 w-3.5" />
           </a>
-        </div>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub 저장소"
+            className="grid h-10 w-10 place-items-center rounded-full text-fg-2 transition-colors duration-200 hover:bg-white/[0.06] hover:text-fg"
+          >
+            <GitHubIcon className="h-[18px] w-[18px]" />
+          </a>
+        </nav>
       </div>
     </header>
   );

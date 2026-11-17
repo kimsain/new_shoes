@@ -1,5 +1,5 @@
 import { Shoe, ShoeData } from '@/types/shoe';
-import { DATA_URL } from '@/constants';
+import { DATA_URL, NEW_WINDOW_DAYS } from '@/constants';
 
 /**
  * Fetch development shoes from World Athletics
@@ -95,9 +95,29 @@ function unescapeJson(raw: string): string {
  * Get stats from shoes
  */
 export function getShoeStats(shoes: Shoe[]) {
+  const now = Date.now();
+  const DAY_MS = 1000 * 60 * 60 * 24;
+  let recentCount = 0;
+  let expiringCount = 0;
+  let nextExpiryDays: number | null = null;
+
+  shoes.forEach((shoe) => {
+    if (shoe.certificationStartDateExp) {
+      const days = (now - new Date(shoe.certificationStartDateExp).getTime()) / DAY_MS;
+      if (days >= 0 && days <= NEW_WINDOW_DAYS) recentCount++;
+    }
+    if (shoe.certificationEndDateExp) {
+      const remaining = Math.ceil((new Date(shoe.certificationEndDateExp).getTime() - now) / DAY_MS);
+      if (remaining > 0 && remaining <= 30) expiringCount++;
+      if (remaining > 0 && (nextExpiryDays === null || remaining < nextExpiryDays)) nextExpiryDays = remaining;
+    }
+  });
+
   return {
     total: shoes.length,
     brandCount: new Set(shoes.map(s => s.manufacturerName)).size,
-    disciplineCount: new Set(shoes.flatMap(s => s.disciplines.map(d => d.name))).size,
+    recentCount,
+    expiringCount,
+    nextExpiryDays,
   };
 }
