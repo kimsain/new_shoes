@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode, type TouchEvent } from 'react';
+import { useCallback, useEffect, useReducer, useRef, type ReactNode, type TouchEvent } from 'react';
 import { CountedItem, SortOption, StatusFilter } from '@/types/filters';
 import { getDisplayName } from '@/utils/displayNames';
 import { MOTION } from '@/styles/tokens';
+import { getSheetOffset, initialSheetState, sheetReducer } from '@/lib/sheetMachine';
 import { CloseIcon } from '../icons';
 import { STATUS_OPTIONS } from '../StatusSegment';
 import { SORT_OPTIONS } from '../SortMenu';
@@ -30,25 +31,27 @@ interface FilterPanelProps {
   clearAllFilters: () => void;
 }
 
-const SWIPE_DISMISS_THRESHOLD = 100;
-
 /**
  * 모바일에서는 아래에서 올라오는 바텀시트, 데스크톱에서는 오른쪽 서랍.
  * 같은 마크업에 globals.css의 panel-in / panel-out이 화면 너비에 맞는 방향을 고른다.
  * 부모는 열려 있는 동안에만 이 컴포넌트를 렌더한다.
+ * 등장, 끌기, 닫힘 순서는 src/lib/sheetMachine.ts의 상태 기계가 정한다.
  */
 export default function FilterPanel(props: FilterPanelProps) {
   const { onClose } = props;
-  const [closing, setClosing] = useState(false);
-  const [dragY, setDragY] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const dragStart = useRef(0);
+  const [sheet, dispatch] = useReducer(sheetReducer, initialSheetState);
   const panelRef = useRef<HTMLDivElement>(null);
+  const dragY = getSheetOffset(sheet);
+  const closing = sheet.phase === 'closing';
 
-  const handleClose = useCallback(() => {
-    setClosing(true);
-    window.setTimeout(onClose, MOTION.sheetExit);
-  }, [onClose]);
+  const handleClose = useCallback(() => dispatch({ type: 'CLOSE' }), []);
+
+  // 나가는 애니메이션이 끝나면 부모에게 알린다. closing에는 한 번만 들어가므로 onClose도 한 번만 불린다
+  useEffect(() => {
+    if (!closing) return;
+    const timer = window.setTimeout(onClose, MOTION.sheetExit);
+    return () => window.clearTimeout(timer);
+  }, [closing, onClose]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -71,22 +74,14 @@ export default function FilterPanel(props: FilterPanelProps) {
   }, [handleClose]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    dragStart.current = e.touches[0].clientY;
-    setDragging(true);
+    dispatch({ type: 'DRAG_START', y: e.touches[0].clientY });
   }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    setDragY(Math.max(0, e.touches[0].clientY - dragStart.current));
+    dispatch({ type: 'DRAG_MOVE', y: e.touches[0].clientY });
   }, []);
 
-  const handleTouchEnd = useCallback(() => {
-    setDragging(false);
-    if (dragY >= SWIPE_DISMISS_THRESHOLD) {
-      handleClose();
-    } else {
-      setDragY(0);
-    }
-  }, [dragY, handleClose]);
+  const handleTouchEnd = useCallback(() => dispatch({ type: 'DRAG_END' }), []);
 
   return (
     <div className="fixed inset-0 z-[60]">
@@ -103,11 +98,11 @@ export default function FilterPanel(props: FilterPanelProps) {
         aria-label="필터"
         tabIndex={-1}
         className={`absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col rounded-t-[28px] border-t border-line-strong bg-surface outline-none lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:w-[420px] lg:rounded-l-[28px] lg:rounded-tr-none lg:border-l lg:border-t-0 ${
-          closing ? 'panel-out' : dragY > 0 ? '' : 'panel-in'
+          closing ? 'panel-out' : sheet.phase === 'entering' ? 'panel-in' : ''
         }`}
         style={{
           transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
-          transition: dragging || closing ? 'none' : 'transform 300ms var(--ease-out)',
+          transition: sheet.phase === 'dragging' || closing ? 'none' : 'transform 300ms var(--ease-out)',
         }}
       >
         {/* 끌어서 닫는 손잡이 (모바일) */}

@@ -8,14 +8,15 @@ import { fetchDevelopmentShoes } from '@/lib/api';
 
 export default async function Home() {
   const shoes = await fetchDevelopmentShoes();
-  const lastUpdated = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+  const renderedAt = new Date();
+  const lastUpdated = renderedAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   return (
     <main className="min-h-screen bg-canvas">
       <Header />
       <HeroSection shoes={shoes} />
 
-      {shoes.length === 0 ? <EmptyDataState /> : <ShoeGrid shoes={shoes} />}
+      {shoes.length === 0 ? <EmptyDataState /> : <ShoeGrid shoes={shoes} renderedAt={renderedAt.getTime()} />}
 
       <Footer lastUpdated={lastUpdated} />
       <ScrollToTop />
@@ -23,7 +24,7 @@ export default async function Home() {
   );
 }
 
-// API 호출이 실패했을 때
+// 빌드 중에 원본을 불러오지 못했을 때 (실행 중의 실패는 마지막 정상 페이지가 대신한다)
 function EmptyDataState() {
   return (
     <section className="mx-auto max-w-[1400px] px-4 pb-24 pt-10 sm:px-6">

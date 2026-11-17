@@ -13,9 +13,13 @@ function clamp01(value: number): number {
 /**
  * 인증 기간 중 지난 비율 (0~1). 날짜가 없으면 null
  */
-export function getElapsedRatio(startDateStr: string | undefined, endDateStr: string | undefined): number | null {
+export function getElapsedRatio(
+  startDateStr: string | undefined,
+  endDateStr: string | undefined,
+  now: number = Date.now()
+): number | null {
   const windowDays = getDaysBetween(startDateStr, endDateStr);
-  const elapsedDays = getDaysSince(startDateStr);
+  const elapsedDays = getDaysSince(startDateStr, now);
   if (windowDays === null || elapsedDays === null) return null;
   if (windowDays <= 0) return 1;
   return Math.round(clamp01(elapsedDays / windowDays) * 1000) / 1000;
@@ -24,7 +28,11 @@ export function getElapsedRatio(startDateStr: string | undefined, endDateStr: st
 /**
  * 인증 기간 중 남은 비율 (0~1). 날짜가 없으면 0
  */
-export function getRemainingRatio(startDateStr: string | undefined, endDateStr: string | undefined): number {
-  const elapsed = getElapsedRatio(startDateStr, endDateStr);
+export function getRemainingRatio(
+  startDateStr: string | undefined,
+  endDateStr: string | undefined,
+  now: number = Date.now()
+): number {
+  const elapsed = getElapsedRatio(startDateStr, endDateStr, now);
   return elapsed === null ? 0 : Math.round((1 - elapsed) * 1000) / 1000;
 }

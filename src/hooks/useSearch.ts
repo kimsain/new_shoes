@@ -11,27 +11,24 @@ interface UseSearchReturn {
   clearSearch: () => void;
 }
 
+/**
+ * 입력값(searchInput)을 SEARCH_DEBOUNCE_MS 동안 멈추면 검색어(searchQuery)로 확정한다.
+ * 상태는 두 개뿐이다: 둘이 같으면 idle, 다르면 debouncing. isSearching은 따로 저장하지 않고 이 차이에서 계산한다.
+ */
 export function useSearch(): UseSearchReturn {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const isSearching = searchInput !== searchQuery;
 
   useEffect(() => {
-    if (searchInput !== searchQuery) {
-      setIsSearching(true);
-    }
-    const timer = setTimeout(() => {
-      setSearchQuery(searchInput);
-      setIsSearching(false);
-    }, SEARCH_DEBOUNCE_MS);
-
+    if (!isSearching) return;
+    const timer = setTimeout(() => setSearchQuery(searchInput), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [searchInput, searchQuery]);
+  }, [isSearching, searchInput]);
 
   const clearSearch = useCallback(() => {
     setSearchInput('');
     setSearchQuery('');
-    setIsSearching(false);
   }, []);
 
   return {

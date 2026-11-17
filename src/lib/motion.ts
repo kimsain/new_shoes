@@ -15,7 +15,10 @@ export function supportsViewTransition(): boolean {
 /**
  * View Transitions로 상태를 바꾼다. 지원하지 않거나 reduced-motion이면 바로 바꾼다.
  * kind는 <html data-vt>로 걸어서 CSS가 전환 종류별로 시간을 다르게 줄 수 있게 한다.
+ * data-vt는 지금 돌고 있는 전환 하나의 종류만 담는다. 전환이 끝났을 때 그 전환이 아직 최신일 때만 지운다.
  */
+let currentTransition: ViewTransition | null = null;
+
 export function runViewTransition(kind: TransitionKind, update: () => void): ViewTransition | null {
   if (!supportsViewTransition()) {
     update();
@@ -25,12 +28,16 @@ export function runViewTransition(kind: TransitionKind, update: () => void): Vie
   const root = document.documentElement;
   root.dataset.vt = kind;
   const transition = document.startViewTransition(update);
+  currentTransition = transition;
   // 연달아 누르면 앞의 전환은 건너뛰어지며 ready가 reject된다. 정상 동작이라 조용히 넘긴다.
   transition.ready.catch(() => undefined);
   transition.finished
     .catch(() => undefined)
     .finally(() => {
-      if (root.dataset.vt === kind) delete root.dataset.vt;
+      // 같은 종류를 연달아 실행해도 앞의 전환이 뒤 전환의 data-vt를 지우지 않는다
+      if (currentTransition !== transition) return;
+      currentTransition = null;
+      delete root.dataset.vt;
     });
   return transition;
 }

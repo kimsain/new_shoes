@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Shoe } from '@/types/shoe';
 import { StatusFilter, SortOption, CountedItem } from '@/types/filters';
 import { PRIORITY_BRANDS } from '@/constants';
-import { getRemainingDays } from '@/utils/date';
+import { getRemainingDays, THRESHOLDS } from '@/utils/date';
 
 interface UseFiltersReturn {
   // State
@@ -34,7 +34,7 @@ interface UseFiltersReturn {
   typesWithCount: CountedItem[];
 }
 
-export function useFilters(shoes: Shoe[]): UseFiltersReturn {
+export function useFilters(shoes: Shoe[], now: number): UseFiltersReturn {
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [selectedDisciplines, setSelectedDisciplines] = useState<Set<string>>(new Set());
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
@@ -42,57 +42,10 @@ export function useFilters(shoes: Shoe[]): UseFiltersReturn {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
 
   // Computed: counts
-  const brandsWithCount = useMemo(() => {
-    const brandMap = new Map<string, number>();
-    shoes.forEach((shoe) => {
-      const count = brandMap.get(shoe.manufacturerName) || 0;
-      brandMap.set(shoe.manufacturerName, count + 1);
-    });
-
-    const entries = Array.from(brandMap.entries());
-    entries.sort((a, b) => {
-      const aIndex = PRIORITY_BRANDS.indexOf(a[0] as typeof PRIORITY_BRANDS[number]);
-      const bIndex = PRIORITY_BRANDS.indexOf(b[0] as typeof PRIORITY_BRANDS[number]);
-      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-      if (aIndex !== -1) return -1;
-      if (bIndex !== -1) return 1;
-      return b[1] - a[1];
-    });
-
-    return entries.map(([name, count]) => ({ name, count }));
-  }, [shoes]);
-
-  const disciplinesWithCount = useMemo(() => {
-    const disciplineMap = new Map<string, number>();
-    shoes.forEach((shoe) => {
-      shoe.disciplines.forEach((d) => {
-        const count = disciplineMap.get(d.name) || 0;
-        disciplineMap.set(d.name, count + 1);
-      });
-    });
-    return Array.from(disciplineMap.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, count]) => ({ name, count }));
-  }, [shoes]);
-
-  const typesWithCount = useMemo(() => {
-    const typeMap = new Map<string, number>();
-    shoes.forEach((shoe) => {
-      const count = typeMap.get(shoe.shoeType) || 0;
-      typeMap.set(shoe.shoeType, count + 1);
-    });
-    return Array.from(typeMap.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, count]) => ({ name, count }));
-  }, [shoes]);
-
-  const statusCounts = useMemo(() => {
-    const counts: Record<StatusFilter, number> = { all: shoes.length, valid: 0, expiring: 0, expired: 0 };
-    shoes.forEach((shoe) => {
-      counts[getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp))]++;
-    });
-    return counts;
-  }, [shoes]);
+  const brandsWithCount = useMemo(() => countBrands(shoes), [shoes]);
+  const disciplinesWithCount = useMemo(() => countDisciplines(shoes), [shoes]);
+  const typesWithCount = useMemo(() => countTypes(shoes), [shoes]);
+  const statusCounts = useMemo(() => countStatuses(shoes, now), [shoes, now]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -105,27 +58,15 @@ export function useFilters(shoes: Shoe[]): UseFiltersReturn {
 
   // Toggles
   const toggleBrand = useCallback((brand: string) => {
-    setSelectedBrands((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(brand) ? newSet.delete(brand) : newSet.add(brand);
-      return newSet;
-    });
+    setSelectedBrands((prev) => toggleInSet(prev, brand));
   }, []);
 
   const toggleDiscipline = useCallback((discipline: string) => {
-    setSelectedDisciplines((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(discipline) ? newSet.delete(discipline) : newSet.add(discipline);
-      return newSet;
-    });
+    setSelectedDisciplines((prev) => toggleInSet(prev, discipline));
   }, []);
 
   const toggleType = useCallback((type: string) => {
-    setSelectedTypes((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(type) ? newSet.delete(type) : newSet.add(type);
-      return newSet;
-    });
+    setSelectedTypes((prev) => toggleInSet(prev, type));
   }, []);
 
   const clearAllFilters = useCallback(() => {
@@ -155,11 +96,61 @@ export function useFilters(shoes: Shoe[]): UseFiltersReturn {
   };
 }
 
+// 값이 있으면 빼고 없으면 넣은 새 Set
+export function toggleInSet<T>(set: Set<T>, value: T): Set<T> {
+  const next = new Set(set);
+  if (next.has(value)) next.delete(value);
+  else next.add(value);
+  return next;
+}
+
+function countBy(values: string[]): Map<string, number> {
+  const map = new Map<string, number>();
+  values.forEach((v) => map.set(v, (map.get(v) || 0) + 1));
+  return map;
+}
+
+function byCountDesc(map: Map<string, number>): CountedItem[] {
+  return Array.from(map.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+}
+
+// 브랜드별 개수. PRIORITY_BRANDS가 그 순서대로 먼저, 나머지는 개수 많은 순
+export function countBrands(shoes: Shoe[]): CountedItem[] {
+  const entries = Array.from(countBy(shoes.map((s) => s.manufacturerName)).entries());
+  entries.sort((a, b) => {
+    const aIndex = PRIORITY_BRANDS.indexOf(a[0] as typeof PRIORITY_BRANDS[number]);
+    const bIndex = PRIORITY_BRANDS.indexOf(b[0] as typeof PRIORITY_BRANDS[number]);
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    return b[1] - a[1];
+  });
+  return entries.map(([name, count]) => ({ name, count }));
+}
+
+export function countDisciplines(shoes: Shoe[]): CountedItem[] {
+  return byCountDesc(countBy(shoes.flatMap((s) => s.disciplines.map((d) => d.name))));
+}
+
+export function countTypes(shoes: Shoe[]): CountedItem[] {
+  return byCountDesc(countBy(shoes.map((s) => s.shoeType)));
+}
+
+export function countStatuses(shoes: Shoe[], now: number = Date.now()): Record<StatusFilter, number> {
+  const counts: Record<StatusFilter, number> = { all: shoes.length, valid: 0, expiring: 0, expired: 0 };
+  shoes.forEach((shoe) => {
+    counts[getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp, now))]++;
+  });
+  return counts;
+}
+
 // 남은 일수로 상태 필터 구분 (만료: 0일 이하, 임박: 1~30일, 유효: 30일 초과 또는 기간 미정)
 export function getStatusFilterOf(remainingDays: number | null): Exclude<StatusFilter, 'all'> {
   if (remainingDays === null) return 'valid';
-  if (remainingDays <= 0) return 'expired';
-  if (remainingDays <= 30) return 'expiring';
+  if (remainingDays <= THRESHOLDS.EXPIRED) return 'expired';
+  if (remainingDays <= THRESHOLDS.URGENT) return 'expiring';
   return 'valid';
 }
 
@@ -173,11 +164,12 @@ export function filterAndSortShoes(
     statusFilter: StatusFilter;
     searchQuery: string;
     sortBy: SortOption;
-  }
+  },
+  now: number = Date.now()
 ): Shoe[] {
   const { selectedBrands, selectedDisciplines, selectedTypes, statusFilter, searchQuery, sortBy } = filters;
 
-  let result = shoes.filter((shoe) => {
+  const result = shoes.filter((shoe) => {
     const matchesBrand = selectedBrands.size === 0 || selectedBrands.has(shoe.manufacturerName);
     const matchesDiscipline = selectedDisciplines.size === 0 ||
       shoe.disciplines.some(d => selectedDisciplines.has(d.name));
@@ -185,7 +177,7 @@ export function filterAndSortShoes(
 
     const matchesStatus =
       statusFilter === 'all' ||
-      getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp)) === statusFilter;
+      getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp, now)) === statusFilter;
 
     const matchesSearch =
       searchQuery === '' ||

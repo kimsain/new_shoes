@@ -14,6 +14,8 @@ interface ShoeCardProps {
   shoe: Shoe;
   /** 상세 열기. 부모가 고정된 함수를 넘긴다 */
   onOpen: (id: string) => void;
+  /** D-day 기준 시각. 서버 렌더와 하이드레이션이 같은 값을 쓰도록 부모가 넘긴다 */
+  today: number;
   isNew?: boolean;
   /** 상세 화면이 이 카드 사진을 가져가 있는 동안 카드 사진을 숨긴다 */
   lifted?: boolean;
@@ -21,7 +23,7 @@ interface ShoeCardProps {
 
 const MAX_RETRY_COUNT = 1;
 
-function ShoeCardComponent({ shoe, onOpen, isNew = false, lifted = false }: ShoeCardProps) {
+function ShoeCardComponent({ shoe, onOpen, today, isNew = false, lifted = false }: ShoeCardProps) {
   const id = shoe.productApplicationuuid;
   const articleRef = useRef<HTMLElement>(null);
   const rectRef = useRef<DOMRect | null>(null);
@@ -29,8 +31,8 @@ function ShoeCardComponent({ shoe, onOpen, isNew = false, lifted = false }: Shoe
   const [failed, setFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  const status = getStatusInfo(shoe.certificationEndDateExp);
-  const ratio = getRemainingRatio(shoe.certificationStartDateExp, shoe.certificationEndDateExp);
+  const status = getStatusInfo(shoe.certificationEndDateExp, today);
+  const ratio = getRemainingRatio(shoe.certificationStartDateExp, shoe.certificationEndDateExp, today);
   const disciplines = shoe.disciplines.map((d) => getDisplayName(d.name)).join(', ');
   const isSpike = shoe.shoeType === 'Spike';
 
@@ -177,6 +179,7 @@ function MediaFallback({ brand }: { brand: string }) {
 const ShoeCard = memo(ShoeCardComponent, (prev, next) => {
   return (
     prev.shoe.productApplicationuuid === next.shoe.productApplicationuuid &&
+    prev.today === next.today &&
     prev.isNew === next.isNew &&
     prev.lifted === next.lifted &&
     prev.onOpen === next.onOpen

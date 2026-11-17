@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Shoe } from '@/types/shoe';
 import { SortOption, StatusFilter } from '@/types/filters';
@@ -8,9 +8,11 @@ import { NEW_WINDOW_DAYS } from '@/constants';
 import { MOTION } from '@/styles/tokens';
 import { useFilters, filterAndSortShoes } from '@/hooks/useFilters';
 import { useSearch } from '@/hooks/useSearch';
+import { useToday } from '@/hooks/useToday';
 import { getDaysSince } from '@/utils/date';
 import { getDisplayName } from '@/utils/displayNames';
 import { runViewTransition, supportsViewTransition } from '@/lib/motion';
+import { detailReducer, getDetailId, initialDetailState } from '@/lib/detailMachine';
 
 import ShoeCard from './ShoeCard';
 import ShoeModal from './ShoeModal';
@@ -24,6 +26,8 @@ import { CloseIcon, SlidersIcon } from './icons';
 
 interface ShoeGridProps {
   shoes: Shoe[];
+  /** 서버가 이 페이지를 렌더한 시각(ms). 하이드레이션 때 D-day를 서버와 같게 계산한다 */
+  renderedAt: number;
 }
 
 const HEADER_HEIGHT = 64;
@@ -33,12 +37,17 @@ function isInViewport(el: HTMLElement): boolean {
   return rect.bottom > HEADER_HEIGHT && rect.top < window.innerHeight;
 }
 
-export default function ShoeGrid({ shoes }: ShoeGridProps) {
-  const filters = useFilters(shoes);
+function focusCardButton(id: string) {
+  document.querySelector<HTMLElement>(`[data-card-button="${id}"]`)?.focus({ preventScroll: true });
+}
+
+export default function ShoeGrid({ shoes, renderedAt }: ShoeGridProps) {
+  const today = useToday(renderedAt);
+  const filters = useFilters(shoes, today);
   const search = useSearch();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [closingModal, setClosingModal] = useState(false);
-  const [navDirection, setNavDirection] = useState<'left' | 'right' | null>(null);
+  // 상세 화면: closed / open / exiting. 전이 규칙은 src/lib/detailMachine.ts에 있다
+  const [detail, dispatchDetail] = useReducer(detailReducer, initialDetailState);
+  const selectedId = getDetailId(detail);
   const [filterOpen, setFilterOpen] = useState(false);
   const [stuck, setStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -54,18 +63,18 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
         statusFilter,
         searchQuery: search.searchQuery,
         sortBy,
-      }),
-    [shoes, selectedBrands, selectedDisciplines, selectedTypes, statusFilter, search.searchQuery, sortBy]
+      }, today),
+    [shoes, selectedBrands, selectedDisciplines, selectedTypes, statusFilter, search.searchQuery, sortBy, today]
   );
 
   const newIds = useMemo(() => {
     const ids = new Set<string>();
     shoes.forEach((shoe) => {
-      const days = getDaysSince(shoe.certificationStartDateExp);
+      const days = getDaysSince(shoe.certificationStartDateExp, today);
       if (days !== null && days >= 0 && days <= NEW_WINDOW_DAYS) ids.add(shoe.productApplicationuuid);
     });
     return ids;
-  }, [shoes]);
+  }, [shoes, today]);
 
   const hasActiveFilters = filters.activeFilterCount > 0 || search.searchQuery !== '';
   const selectedIndex = selectedId ? filteredShoes.findIndex((s) => s.productApplicationuuid === selectedId) : -1;
@@ -96,53 +105,59 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
       await preload.decode().catch(() => undefined);
     }
 
-    setNavDirection(null);
     if (!media || !supportsViewTransition()) {
-      setSelectedId(id);
+      dispatchDetail({ type: 'OPEN', id });
       return;
     }
 
     media.style.viewTransitionName = 'shoe-media';
     runViewTransition('open', () => {
       media.style.viewTransitionName = '';
-      flushSync(() => setSelectedId(id));
+      flushSync(() => dispatchDetail({ type: 'OPEN', id }));
     });
   }, []);
 
   const closeShoe = useCallback(() => {
-    if (!selectedId) return;
-    const media = document.querySelector<HTMLElement>(`[data-media="${selectedId}"]`);
-    const cardButton = document.querySelector<HTMLElement>(`[data-card-button="${selectedId}"]`);
-    const restoreFocus = () => cardButton?.focus({ preventScroll: true });
+    // 이미 닫히는 중이면 무시한다 (ESC를 두 번 눌러도 타이머가 겹치지 않는다)
+    if (detail.phase !== 'open') return;
+    const id = detail.id;
+    const media = document.querySelector<HTMLElement>(`[data-media="${id}"]`);
 
+    // 카드가 화면에 보이면 사진이 카드 자리로 날아가며 닫힌다
     if (media && supportsViewTransition() && isInViewport(media)) {
       const transition = runViewTransition('close', () => {
-        flushSync(() => setSelectedId(null));
+        flushSync(() => dispatchDetail({ type: 'CLOSED' }));
         media.style.viewTransitionName = 'shoe-media';
       });
       transition?.finished
         .catch(() => undefined)
         .finally(() => {
           media.style.viewTransitionName = '';
-          restoreFocus();
+          focusCardButton(id);
         });
       return;
     }
 
-    setClosingModal(true);
-    window.setTimeout(() => {
-      setClosingModal(false);
-      setSelectedId(null);
-      restoreFocus();
+    // 그 밖에는 CSS 닫힘 애니메이션(popup-out)을 돌린 뒤 아래 효과가 내린다
+    dispatchDetail({ type: 'EXIT' });
+  }, [detail]);
+
+  // exiting에 들어가면 애니메이션 시간만큼 기다렸다가 닫고 카드로 포커스를 돌려준다
+  const exitingId = detail.phase === 'exiting' ? detail.id : null;
+  useEffect(() => {
+    if (!exitingId) return;
+    const timer = window.setTimeout(() => {
+      dispatchDetail({ type: 'CLOSED' });
+      focusCardButton(exitingId);
     }, MOTION.popupExit);
-  }, [selectedId]);
+    return () => window.clearTimeout(timer);
+  }, [exitingId]);
 
   const goTo = useCallback(
     (delta: 1 | -1) => {
       const next = filteredShoes[selectedIndex + delta];
       if (selectedIndex < 0 || !next) return;
-      setNavDirection(delta > 0 ? 'right' : 'left');
-      setSelectedId(next.productApplicationuuid);
+      dispatchDetail({ type: 'NAVIGATE', id: next.productApplicationuuid, direction: delta > 0 ? 'right' : 'left' });
     },
     [filteredShoes, selectedIndex]
   );
@@ -295,6 +310,7 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
               key={shoe.productApplicationuuid}
               shoe={shoe}
               onOpen={openShoe}
+              today={today}
               isNew={newIds.has(shoe.productApplicationuuid)}
               lifted={shoe.productApplicationuuid === selectedId}
             />
@@ -333,8 +349,8 @@ export default function ShoeGrid({ shoes }: ShoeGridProps) {
           index={selectedIndex}
           total={filteredShoes.length}
           isNew={newIds.has(selectedShoe.productApplicationuuid)}
-          closing={closingModal}
-          direction={navDirection}
+          closing={detail.phase === 'exiting'}
+          direction={detail.phase === 'closed' ? null : detail.direction}
           onClose={closeShoe}
           onPrev={showPrev}
           onNext={showNext}

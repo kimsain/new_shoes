@@ -290,8 +290,12 @@ html.js .countup-pending {
    ============================================ */
 
 .site-header {
-  view-transition-name: site-header;
   transition: transform 300ms var(--ease-out);
+}
+
+/* 필터 전환에서만 따로 떼어 낸다. 상세를 열고 닫을 때 이름이 있으면 스냅숏이 상세 화면 위에 그려진다 */
+html[data-vt="filter"] .site-header {
+  view-transition-name: site-header;
 }
 
 .site-header-bg {
@@ -422,8 +426,11 @@ html.js .countup-pending {
    ============================================ */
 
 .catalog-toolbar {
-  view-transition-name: catalog-toolbar;
   transition: transform 300ms var(--ease-out);
+}
+
+html[data-vt="filter"] .catalog-toolbar {
+  view-transition-name: catalog-toolbar;
 }
 
 .catalog-toolbar-bg {

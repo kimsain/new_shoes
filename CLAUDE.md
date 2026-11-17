@@ -15,6 +15,8 @@ npm install     # Install dependencies
 npm run dev     # Development server at http://localhost:3000
 npm run build   # Production build
 npm run lint    # Run ESLint
+npm test        # Vitest (pure logic and state machines in src/__tests__)
+npm run test:coverage  # Fails below 90% line coverage
 ```
 
 ## Architecture
@@ -43,6 +45,7 @@ src/
 2. Parses embedded JSON from `litProductsDataRaw` variable
 3. Filters for development shoes (`isDevelopmentShoe === true` OR `status === 'APPROVED_UNTIL'`)
 4. Passes data to client components for display
+5. On failure `fetchDevelopmentShoes` throws, so ISR keeps serving the last good page. Only during `next build` it returns `[]` (empty state) so a source outage never blocks a deploy
 
 ### Key Components
 
@@ -89,6 +92,8 @@ Filter → bottom sheet (88svh max), Detail → full screen
   - "Cross Country (including Mountain and Trail Running)" → "Cross Country"
 - `src/utils/progress.ts` - Elapsed / remaining ratio of each shoe's own certification window (day-based so SSR and client match)
 - `src/lib/motion.ts` - `runViewTransition(kind, update)`, `observeReveal(el)`, reduced-motion check
+- `src/lib/detailMachine.ts` / `src/lib/sheetMachine.ts` - Pure reducers for the detail modal (closed / open / exiting) and the filter sheet (entering / dragging / resting / closing). Events not allowed in the current phase are ignored
+- `src/hooks/useToday.ts` - UTC day used for D-day math: the server render time during hydration, then the browser's day
 
 ### Brand Priority
 
@@ -152,7 +157,7 @@ Font: Pretendard Variable from jsDelivr (dynamic subset) for everything. No seri
 
 ## Performance Optimizations
 
-- **React.memo**: ShoeCard re-renders only when `isNew`, `lifted` or `onOpen` change. `onOpen` is stable and takes the shoe id
+- **React.memo**: ShoeCard re-renders only when `today`, `isNew`, `lifted` or `onOpen` change. `onOpen` is stable and takes the shoe id. `today` comes from `useToday(renderedAt)` so D-day hydrates with the server render time, then switches to the browser's day
 - **Image optimization**: WebP at card size instead of multi-MB originals; ambient backdrop reuses the same URL
 - **Animations**: only `transform` and `opacity` move. No animated `filter: blur`
 
@@ -161,7 +166,7 @@ Font: Pretendard Variable from jsDelivr (dynamic subset) for everything. No seri
 ### Motion
 - Hero: line-by-line title, count-up stats, drifting photo wall (pauses on hover), scroll-driven exit
 - Cards: scroll reveal with position-ordered stagger, hover lift + glow
-- Filter/sort changes from the toolbar or rail: View Transitions move cards to their new spots (`html[data-vt="filter"]`)
+- Filter/sort changes from the toolbar or rail: View Transitions move cards to their new spots (`html[data-vt="filter"]`). The header and toolbar get their own `view-transition-name` only during this kind; a permanent name would draw them above the detail during open/close
 - Card → detail: the card photo flies to the detail photo (`view-transition-name: shoe-media`), and back on close when the card is on screen
 - Fallback without View Transitions: CSS popup / fade
 
@@ -181,8 +186,8 @@ Font: Pretendard Variable from jsDelivr (dynamic subset) for everything. No seri
 - NEW badge: certified within `NEW_WINDOW_DAYS` (30)
 - Hero wall: `HERO_WALL_COUNT` (18) newest shoes in 3 rows
 
-### Known lint issues (pre-existing)
-`useSearch.ts` (setState in effect) and `useFilters.ts` (`prefer-const`, ternary statements) were flagged before the redesign and left as is.
+### Lint
+`npm run lint` reports 0 problems. Keep it that way.
 
 ## Deployment
 

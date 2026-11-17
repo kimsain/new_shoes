@@ -7,6 +7,8 @@ import { LogoMark, ArrowUpRightIcon, GitHubIcon } from './icons';
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const lastScrollY = useRef(0);
+  // <html data-header-hidden>의 마지막 값. 바뀔 때만 DOM에 쓴다 (처음에는 null이라 한 번은 쓴다)
+  const headerHidden = useRef<boolean | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -16,13 +18,12 @@ export default function Header() {
       setScrolled(currentY > 12);
 
       // 모바일에서만 아래로 스크롤하면 숨긴다 (CSS가 1024px 미만에서만 적용)
+      // 위쪽 80px 안이면 보이고, 6px 넘게 내리면 숨기고, 6px 넘게 올리면 다시 보인다. 그 사이는 그대로 둔다
       const delta = currentY - lastScrollY.current;
-      if (currentY < 80) {
-        root.dataset.headerHidden = 'false';
-      } else if (delta > 6) {
-        root.dataset.headerHidden = 'true';
-      } else if (delta < -6) {
-        root.dataset.headerHidden = 'false';
+      const hidden = currentY < 80 ? false : delta > 6 ? true : delta < -6 ? false : headerHidden.current ?? false;
+      if (hidden !== headerHidden.current) {
+        headerHidden.current = hidden;
+        root.dataset.headerHidden = String(hidden);
       }
       lastScrollY.current = currentY;
     };
