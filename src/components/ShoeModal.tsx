@@ -18,6 +18,8 @@ interface ShoeModalProps {
   /** View Transition을 쓰지 못할 때의 CSS 닫힘 애니메이션 */
   closing: boolean;
   direction: 'left' | 'right' | null;
+  /** 카드 사진이 날아가며 열렸으면 패널은 크기 변화 없이 서서히 나타난다 */
+  morph: boolean;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -35,6 +37,7 @@ export default function ShoeModal({
   isNew,
   closing,
   direction,
+  morph,
   onClose,
   onPrev,
   onNext,
@@ -112,7 +115,7 @@ export default function ShoeModal({
           aria-labelledby="detail-title"
           tabIndex={-1}
           className={`detail-panel pointer-events-auto relative flex h-full w-full flex-col overflow-y-auto overscroll-contain bg-surface outline-none lg:grid lg:h-[min(760px,calc(100svh-64px))] lg:max-w-[1180px] lg:grid-cols-[1.12fr_1fr] lg:overflow-hidden lg:rounded-[28px] lg:border lg:border-line-strong lg:shadow-[0_40px_120px_-30px_rgb(0_0_0/0.9)] ${
-            closing ? 'popup-out' : 'popup-in'
+            closing ? 'popup-out' : morph ? 'popup-fade-in' : 'popup-in'
           }`}
         >
           {/* 모바일 상단 막대: 사진 위에 떠 있다 */}

@@ -615,6 +615,11 @@ html.js .reveal:not([data-revealed]) .bar-fill {
   animation: pop-in 200ms var(--ease-out) both;
 }
 
+/* 사진이 날아와 열리는 상세 패널: 크기 변화 없이 서서히 나타난다 */
+.popup-fade-in {
+  animation: fade-in 200ms var(--ease-out) both;
+}
+
 .popup-out {
   animation: pop-out 150ms var(--ease-in) both;
 }
@@ -716,10 +721,6 @@ html[data-vt="open"]::view-transition-new(root) {
 html[data-vt="open"]::view-transition-group(shoe-media) {
   animation-duration: 450ms;
   animation-timing-function: var(--ease-emphasized);
-}
-
-html[data-vt="open"] .detail-panel {
-  animation-name: fade-in;
 }
 
 /* 닫을 때: 패널은 더 짧게 사라지고 사진은 카드 자리로 돌아간다 */

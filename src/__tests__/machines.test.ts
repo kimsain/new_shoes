@@ -4,10 +4,11 @@ import { getSheetOffset, initialSheetState, sheetReducer, SWIPE_DISMISS_THRESHOL
 
 describe('detailReducer', () => {
   it('열고, 좌우로 넘기고, 닫는다', () => {
-    let s = detailReducer(initialDetailState, { type: 'OPEN', id: 'a' });
-    expect(s).toEqual({ phase: 'open', id: 'a', direction: null });
+    let s = detailReducer(initialDetailState, { type: 'OPEN', id: 'a', morph: true });
+    expect(s).toEqual({ phase: 'open', id: 'a', direction: null, morph: true });
     s = detailReducer(s, { type: 'NAVIGATE', id: 'b', direction: 'right' });
-    expect(s).toEqual({ phase: 'open', id: 'b', direction: 'right' });
+    // 넘겨도 열 때 정한 등장 방식(morph)은 그대로다. 바뀌면 패널 애니메이션이 다시 돌아 깜빡인다
+    expect(s).toEqual({ phase: 'open', id: 'b', direction: 'right', morph: true });
     expect(getDetailId(s)).toBe('b');
     s = detailReducer(s, { type: 'EXIT' });
     expect(s.phase).toBe('exiting');
@@ -16,12 +17,12 @@ describe('detailReducer', () => {
   });
 
   it('열려 있을 때 다시 OPEN이 와도 무시한다', () => {
-    const open = detailReducer(initialDetailState, { type: 'OPEN', id: 'a' });
-    expect(detailReducer(open, { type: 'OPEN', id: 'z' })).toBe(open);
+    const open = detailReducer(initialDetailState, { type: 'OPEN', id: 'a', morph: false });
+    expect(detailReducer(open, { type: 'OPEN', id: 'z', morph: true })).toBe(open);
   });
 
   it('닫히는 중에는 좌우 이동과 두 번째 EXIT를 무시한다', () => {
-    const exiting = detailReducer(detailReducer(initialDetailState, { type: 'OPEN', id: 'a' }), { type: 'EXIT' });
+    const exiting = detailReducer(detailReducer(initialDetailState, { type: 'OPEN', id: 'a', morph: false }), { type: 'EXIT' });
     expect(detailReducer(exiting, { type: 'NAVIGATE', id: 'c', direction: 'left' })).toBe(exiting);
     expect(detailReducer(exiting, { type: 'EXIT' })).toBe(exiting);
   });

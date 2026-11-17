@@ -106,14 +106,14 @@ export default function ShoeGrid({ shoes, renderedAt }: ShoeGridProps) {
     }
 
     if (!media || !supportsViewTransition()) {
-      dispatchDetail({ type: 'OPEN', id });
+      dispatchDetail({ type: 'OPEN', id, morph: false });
       return;
     }
 
     media.style.viewTransitionName = 'shoe-media';
     runViewTransition('open', () => {
       media.style.viewTransitionName = '';
-      flushSync(() => dispatchDetail({ type: 'OPEN', id }));
+      flushSync(() => dispatchDetail({ type: 'OPEN', id, morph: true }));
     });
   }, []);
 
@@ -351,6 +351,7 @@ export default function ShoeGrid({ shoes, renderedAt }: ShoeGridProps) {
           isNew={newIds.has(selectedShoe.productApplicationuuid)}
           closing={detail.phase === 'exiting'}
           direction={detail.phase === 'closed' ? null : detail.direction}
+          morph={detail.phase !== 'closed' && detail.morph}
           onClose={closeShoe}
           onPrev={showPrev}
           onNext={showNext}
