@@ -28,6 +28,7 @@ interface UseFiltersReturn {
 
   // Computed
   activeFilterCount: number;
+  statusCounts: Record<StatusFilter, number>;
   brandsWithCount: CountedItem[];
   disciplinesWithCount: CountedItem[];
   typesWithCount: CountedItem[];
@@ -85,6 +86,14 @@ export function useFilters(shoes: Shoe[]): UseFiltersReturn {
       .map(([name, count]) => ({ name, count }));
   }, [shoes]);
 
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusFilter, number> = { all: shoes.length, valid: 0, expiring: 0, expired: 0 };
+    shoes.forEach((shoe) => {
+      counts[getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp))]++;
+    });
+    return counts;
+  }, [shoes]);
+
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (selectedBrands.size > 0) count++;
@@ -139,10 +148,19 @@ export function useFilters(shoes: Shoe[]): UseFiltersReturn {
     toggleType,
     clearAllFilters,
     activeFilterCount,
+    statusCounts,
     brandsWithCount,
     disciplinesWithCount,
     typesWithCount,
   };
+}
+
+// 남은 일수로 상태 필터 구분 (만료: 0일 이하, 임박: 1~30일, 유효: 30일 초과 또는 기간 미정)
+export function getStatusFilterOf(remainingDays: number | null): Exclude<StatusFilter, 'all'> {
+  if (remainingDays === null) return 'valid';
+  if (remainingDays <= 0) return 'expired';
+  if (remainingDays <= 30) return 'expiring';
+  return 'valid';
 }
 
 // Filter and sort shoes
@@ -165,15 +183,9 @@ export function filterAndSortShoes(
       shoe.disciplines.some(d => selectedDisciplines.has(d.name));
     const matchesType = selectedTypes.size === 0 || selectedTypes.has(shoe.shoeType);
 
-    const remainingDays = getRemainingDays(shoe.certificationEndDateExp);
-    let matchesStatus = true;
-    if (statusFilter === 'expired') {
-      matchesStatus = remainingDays !== null && remainingDays <= 0;
-    } else if (statusFilter === 'expiring') {
-      matchesStatus = remainingDays !== null && remainingDays > 0 && remainingDays <= 30;
-    } else if (statusFilter === 'valid') {
-      matchesStatus = remainingDays === null || remainingDays > 30;
-    }
+    const matchesStatus =
+      statusFilter === 'all' ||
+      getStatusFilterOf(getRemainingDays(shoe.certificationEndDateExp)) === statusFilter;
 
     const matchesSearch =
       searchQuery === '' ||
@@ -202,28 +214,4 @@ export function filterAndSortShoes(
   }
 
   return result;
-}
-
-// Group shoes by brand
-export function groupShoesByBrand(shoes: Shoe[]): Record<string, Shoe[]> {
-  const grouped: Record<string, Shoe[]> = {};
-  shoes.forEach((shoe) => {
-    if (!grouped[shoe.manufacturerName]) {
-      grouped[shoe.manufacturerName] = [];
-    }
-    grouped[shoe.manufacturerName].push(shoe);
-  });
-  return grouped;
-}
-
-// Sort brands with priority
-export function sortBrandsWithPriority(brands: string[]): string[] {
-  return [...brands].sort((a, b) => {
-    const aIndex = PRIORITY_BRANDS.indexOf(a as typeof PRIORITY_BRANDS[number]);
-    const bIndex = PRIORITY_BRANDS.indexOf(b as typeof PRIORITY_BRANDS[number]);
-    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-    if (aIndex !== -1) return -1;
-    if (bIndex !== -1) return 1;
-    return a.localeCompare(b);
-  });
 }

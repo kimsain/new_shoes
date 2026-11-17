@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
+import { ImageOffIcon } from '@/components/icons';
 import { fetchDevelopmentShoes } from '@/lib/api';
 
 export default async function Home() {
@@ -10,46 +11,29 @@ export default async function Home() {
   const lastUpdated = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-canvas">
       <Header />
+      <HeroSection shoes={shoes} />
 
-      {/* Hero Section */}
-      <HeroSection />
+      {shoes.length === 0 ? <EmptyDataState /> : <ShoeGrid shoes={shoes} />}
 
-      {/* Main Content */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-16">
-        {shoes.length === 0 ? (
-          <EmptyDataState />
-        ) : (
-          <ShoeGrid shoes={shoes} />
-        )}
-      </section>
-
-      {/* Footer */}
       <Footer lastUpdated={lastUpdated} />
-
-      {/* Scroll to top */}
       <ScrollToTop />
     </main>
   );
 }
 
-// Empty Data State - shown when API fetch fails
+// API 호출이 실패했을 때
 function EmptyDataState() {
   return (
-    <div className="text-center py-24">
-      <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-zinc-800/50 flex items-center justify-center">
-        <svg className="w-10 h-10 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-          />
-        </svg>
+    <section className="mx-auto max-w-[1400px] px-4 pb-24 pt-10 sm:px-6">
+      <div className="flex flex-col items-center rounded-card border border-dashed border-line-strong px-6 py-24 text-center">
+        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-control text-fg-3">
+          <ImageOffIcon className="h-6 w-6" />
+        </span>
+        <p className="mt-6 text-[20px] font-bold tracking-[-0.03em] text-fg">데이터를 불러올 수 없습니다</p>
+        <p className="mt-2 text-[15px] text-fg-3">잠시 후 다시 시도해 주세요.</p>
       </div>
-      <p className="text-xl text-white mb-3">데이터를 불러올 수 없습니다</p>
-      <p className="text-zinc-500">잠시 후 다시 시도해주세요</p>
-    </div>
+    </section>
   );
 }

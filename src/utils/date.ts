@@ -1,4 +1,4 @@
-import { STATUS } from '@/styles/tokens';
+import { STATUS, StatusLevel } from '@/styles/tokens';
 
 // 상태 임계값 (일)
 const THRESHOLDS = {
@@ -7,7 +7,9 @@ const THRESHOLDS = {
   WARNING: 90,
 } as const;
 
-export type StatusLevel = keyof typeof STATUS;
+const DAY_MS = 1000 * 60 * 60 * 24;
+
+export type { StatusLevel };
 
 export interface StatusInfo {
   level: StatusLevel;
@@ -24,11 +26,27 @@ export function getRemainingDays(endDateStr: string | undefined): number | null 
   const endDate = new Date(endDateStr);
   const today = new Date();
   const diffTime = endDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.ceil(diffTime / DAY_MS);
 }
 
 /**
- * 날짜 문자열을 한국어 형식으로 포맷
+ * 시작일부터 오늘까지 지난 일수 계산
+ */
+export function getDaysSince(startDateStr: string | undefined): number | null {
+  if (!startDateStr) return null;
+  return Math.floor((Date.now() - new Date(startDateStr).getTime()) / DAY_MS);
+}
+
+/**
+ * 두 날짜 사이의 일수
+ */
+export function getDaysBetween(startDateStr: string | undefined, endDateStr: string | undefined): number | null {
+  if (!startDateStr || !endDateStr) return null;
+  return Math.round((new Date(endDateStr).getTime() - new Date(startDateStr).getTime()) / DAY_MS);
+}
+
+/**
+ * 날짜 문자열을 한국어 형식으로 포맷 (2027년 11월 16일)
  */
 export function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return '-';
@@ -38,6 +56,15 @@ export function formatDate(dateStr: string | undefined): string {
     month: 'long',
     day: 'numeric',
   });
+}
+
+/**
+ * 짧은 날짜 형식 (2027.11.16)
+ */
+export function formatShortDate(dateStr: string | undefined): string {
+  if (!dateStr) return '-';
+  const [y, m, d] = dateStr.slice(0, 10).split('-');
+  return `${y}.${m}.${d}`;
 }
 
 /**
@@ -52,7 +79,7 @@ export function getStatusLevel(remainingDays: number | null): StatusLevel {
 }
 
 /**
- * 신발의 종합 상태 정보 반환 (카드용)
+ * 신발의 종합 상태 정보 반환
  */
 export function getStatusInfo(endDateStr: string | undefined): StatusInfo {
   const remainingDays = getRemainingDays(endDateStr);
@@ -72,39 +99,4 @@ export function getStatusInfo(endDateStr: string | undefined): StatusInfo {
   }
 
   return { level, text, remainingDays, colors };
-}
-
-/**
- * 상세 상태 정보 반환 (모달용)
- */
-export function getDetailedStatusInfo(endDateStr: string | undefined): {
-  text: string;
-  color: string;
-  bg: string;
-  border: string;
-  remainingDays: number | null;
-} {
-  const remainingDays = getRemainingDays(endDateStr);
-  const level = getStatusLevel(remainingDays);
-  const colors = STATUS[level];
-
-  let text: string;
-  switch (level) {
-    case 'expired':
-      text = '승인 기간 만료';
-      break;
-    case 'unknown':
-      text = '기간 미정';
-      break;
-    default:
-      text = `만료까지 ${remainingDays}일`;
-  }
-
-  return {
-    text,
-    color: colors.text,
-    bg: colors.bg,
-    border: colors.border,
-    remainingDays,
-  };
 }

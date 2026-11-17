@@ -1,355 +1,347 @@
 'use client';
 
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Shoe } from '@/types/shoe';
-import { NEWEST_SHOES_COUNT } from '@/constants';
-import { useFilters, filterAndSortShoes, groupShoesByBrand, sortBrandsWithPriority } from '@/hooks/useFilters';
+import { SortOption, StatusFilter } from '@/types/filters';
+import { NEW_WINDOW_DAYS } from '@/constants';
+import { MOTION } from '@/styles/tokens';
+import { useFilters, filterAndSortShoes } from '@/hooks/useFilters';
 import { useSearch } from '@/hooks/useSearch';
+import { getDaysSince } from '@/utils/date';
+import { getDisplayName } from '@/utils/displayNames';
+import { runViewTransition, supportsViewTransition } from '@/lib/motion';
 
 import ShoeCard from './ShoeCard';
+import ShoeModal from './ShoeModal';
 import SearchBar from './SearchBar';
-import SectionHeader from './SectionHeader';
+import SortMenu from './SortMenu';
+import StatusSegment, { STATUS_OPTIONS } from './StatusSegment';
+import BrandRail from './BrandRail';
 import EmptyState from './EmptyState';
-import BottomSheet from './BottomSheet';
-import MobilePresetChips from './MobilePresetChips';
-import { SidebarFilter, MobileFilter, ActiveFilterBadge } from './filters';
-
-// Dynamic import for modal (code splitting)
-const ShoeModal = lazy(() => import('./ShoeModal'));
+import { FilterPanel } from './filters';
+import { CloseIcon, SlidersIcon } from './icons';
 
 interface ShoeGridProps {
   shoes: Shoe[];
 }
 
-export default function ShoeGrid({ shoes }: ShoeGridProps) {
-  const [selectedShoeIndex, setSelectedShoeIndex] = useState<number | null>(null);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+const HEADER_HEIGHT = 64;
 
-  // Hooks
+function isInViewport(el: HTMLElement): boolean {
+  const rect = el.getBoundingClientRect();
+  return rect.bottom > HEADER_HEIGHT && rect.top < window.innerHeight;
+}
+
+export default function ShoeGrid({ shoes }: ShoeGridProps) {
   const filters = useFilters(shoes);
   const search = useSearch();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [closingModal, setClosingModal] = useState(false);
+  const [navDirection, setNavDirection] = useState<'left' | 'right' | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [stuck, setStuck] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Computed: newest shoes
-  const newestShoes = useMemo(() => {
-    return [...shoes]
-      .sort((a, b) => {
-        const dateA = a.certificationStartDateExp ? new Date(a.certificationStartDateExp).getTime() : 0;
-        const dateB = b.certificationStartDateExp ? new Date(b.certificationStartDateExp).getTime() : 0;
-        return dateB - dateA;
-      })
-      .slice(0, NEWEST_SHOES_COUNT);
+  const { selectedBrands, selectedDisciplines, selectedTypes, statusFilter, sortBy } = filters;
+
+  const filteredShoes = useMemo(
+    () =>
+      filterAndSortShoes(shoes, {
+        selectedBrands,
+        selectedDisciplines,
+        selectedTypes,
+        statusFilter,
+        searchQuery: search.searchQuery,
+        sortBy,
+      }),
+    [shoes, selectedBrands, selectedDisciplines, selectedTypes, statusFilter, search.searchQuery, sortBy]
+  );
+
+  const newIds = useMemo(() => {
+    const ids = new Set<string>();
+    shoes.forEach((shoe) => {
+      const days = getDaysSince(shoe.certificationStartDateExp);
+      if (days !== null && days >= 0 && days <= NEW_WINDOW_DAYS) ids.add(shoe.productApplicationuuid);
+    });
+    return ids;
   }, [shoes]);
 
-  // Computed: filtered shoes
-  const filteredShoes = useMemo(() => {
-    return filterAndSortShoes(shoes, {
-      selectedBrands: filters.selectedBrands,
-      selectedDisciplines: filters.selectedDisciplines,
-      selectedTypes: filters.selectedTypes,
-      statusFilter: filters.statusFilter,
-      searchQuery: search.searchQuery,
-      sortBy: filters.sortBy,
-    });
-  }, [shoes, filters, search.searchQuery]);
-
-  // Computed: grouped by brand
-  const groupedShoes = useMemo(() => groupShoesByBrand(filteredShoes), [filteredShoes]);
-  const sortedBrands = sortBrandsWithPriority(Object.keys(groupedShoes));
-
-  // Computed: has active filters
   const hasActiveFilters = filters.activeFilterCount > 0 || search.searchQuery !== '';
+  const selectedIndex = selectedId ? filteredShoes.findIndex((s) => s.productApplicationuuid === selectedId) : -1;
+  const selectedShoe = selectedIndex >= 0 ? filteredShoes[selectedIndex] : null;
 
-  // Selected shoe from filtered list
-  const selectedShoe = selectedShoeIndex !== null ? filteredShoes[selectedShoeIndex] : null;
-
-  // Navigation handlers
-  const handleSelectShoe = useCallback((shoe: Shoe) => {
-    const index = filteredShoes.findIndex((s) => s.productApplicationuuid === shoe.productApplicationuuid);
-    setSelectedShoeIndex(index >= 0 ? index : null);
-  }, [filteredShoes]);
-
-  const handleCloseModal = useCallback(() => {
-    setSelectedShoeIndex(null);
+  // 도구 막대가 헤더 밑에 붙었는지 감지해 배경을 깐다
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
+      rootMargin: `-${HEADER_HEIGHT + 1}px 0px 0px 0px`,
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
-  const handlePrevShoe = useCallback(() => {
-    if (selectedShoeIndex !== null && selectedShoeIndex > 0) {
-      setSelectedShoeIndex(selectedShoeIndex - 1);
+  // ---------- 상세 열기와 닫기 ----------
+
+  // 카드는 memo로 고정되므로 이 함수는 상태에 기대지 않는다 (예전의 엉뚱한 신발이 열리던 문제)
+  const openShoe = useCallback(async (id: string) => {
+    const media = document.querySelector<HTMLElement>(`[data-media="${id}"]`);
+    const img = media?.querySelector<HTMLImageElement>('img[data-fg]');
+
+    // 상세 화면이 첫 프레임부터 같은 사진을 그릴 수 있게 미리 디코드한다
+    if (img?.complete && img.currentSrc) {
+      const preload = new window.Image();
+      preload.src = img.currentSrc;
+      await preload.decode().catch(() => undefined);
     }
-  }, [selectedShoeIndex]);
 
-  const handleNextShoe = useCallback(() => {
-    if (selectedShoeIndex !== null && selectedShoeIndex < filteredShoes.length - 1) {
-      setSelectedShoeIndex(selectedShoeIndex + 1);
+    setNavDirection(null);
+    if (!media || !supportsViewTransition()) {
+      setSelectedId(id);
+      return;
     }
-  }, [selectedShoeIndex, filteredShoes.length]);
 
-  // Clear all (filters + search)
-  const handleClearAll = useCallback(() => {
-    filters.clearAllFilters();
-    search.clearSearch();
-  }, [filters, search]);
+    media.style.viewTransitionName = 'shoe-media';
+    runViewTransition('open', () => {
+      media.style.viewTransitionName = '';
+      flushSync(() => setSelectedId(id));
+    });
+  }, []);
 
-  // Shared filter props
-  const filterProps = {
-    statusFilter: filters.statusFilter,
-    setStatusFilter: filters.setStatusFilter,
-    brandsWithCount: filters.brandsWithCount,
-    selectedBrands: filters.selectedBrands,
-    toggleBrand: filters.toggleBrand,
-    disciplinesWithCount: filters.disciplinesWithCount,
-    selectedDisciplines: filters.selectedDisciplines,
-    toggleDiscipline: filters.toggleDiscipline,
-    typesWithCount: filters.typesWithCount,
-    selectedTypes: filters.selectedTypes,
-    toggleType: filters.toggleType,
-    activeFilterCount: filters.activeFilterCount,
-    clearAllFilters: filters.clearAllFilters,
-  };
+  const closeShoe = useCallback(() => {
+    if (!selectedId) return;
+    const media = document.querySelector<HTMLElement>(`[data-media="${selectedId}"]`);
+    const cardButton = document.querySelector<HTMLElement>(`[data-card-button="${selectedId}"]`);
+    const restoreFocus = () => cardButton?.focus({ preventScroll: true });
 
-  return (
-    <>
-      <div className="lg:flex lg:gap-6">
-        {/* Desktop Sidebar - hidden on mobile */}
-        <aside className="hidden lg:block w-60 flex-shrink-0">
-          <div className="sticky top-20 bg-zinc-900/50 rounded-2xl border border-white/[0.06] overflow-hidden max-h-[calc(100vh-6rem)]">
-            <div className="p-4 overflow-y-auto max-h-[calc(100vh-6rem)] scrollbar-thin">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">필터</h3>
-                {filters.activeFilterCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 text-xs font-medium">
-                    {filters.activeFilterCount}
-                  </span>
-                )}
-              </div>
-              <SidebarFilter {...filterProps} />
-            </div>
-          </div>
-        </aside>
+    if (media && supportsViewTransition() && isInViewport(media)) {
+      const transition = runViewTransition('close', () => {
+        flushSync(() => setSelectedId(null));
+        media.style.viewTransitionName = 'shoe-media';
+      });
+      transition?.finished
+        .catch(() => undefined)
+        .finally(() => {
+          media.style.viewTransitionName = '';
+          restoreFocus();
+        });
+      return;
+    }
 
-        {/* Main Content Column */}
-        <div className="flex-1 min-w-0">
-          {/* Desktop Search Bar */}
-          <div className="hidden lg:block sticky top-16 z-40 py-2 mb-4">
-            <div className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-white/[0.06] p-3">
-              <SearchBar
-                searchInput={search.searchInput}
-                setSearchInput={search.setSearchInput}
-                isSearching={search.isSearching}
-                clearSearch={search.clearSearch}
-                sortBy={filters.sortBy}
-                setSortBy={filters.setSortBy}
-              />
-            </div>
-          </div>
+    setClosingModal(true);
+    window.setTimeout(() => {
+      setClosingModal(false);
+      setSelectedId(null);
+      restoreFocus();
+    }, MOTION.popupExit);
+  }, [selectedId]);
 
-          {/* Mobile Search + Filter Bar */}
-          <div className="lg:hidden sticky top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 glass mb-4">
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <SearchBar
-                  searchInput={search.searchInput}
-                  setSearchInput={search.setSearchInput}
-                  isSearching={search.isSearching}
-                  clearSearch={search.clearSearch}
-                  sortBy={filters.sortBy}
-                  setSortBy={filters.setSortBy}
-                  placeholder="검색..."
-                  compact
-                />
-              </div>
-
-              {/* Filter Button */}
-              <button
-                onClick={() => setShowMobileFilters(true)}
-                className={`px-3 py-2.5 min-h-[44px] rounded-xl border transition-all duration-300 flex items-center gap-2 btn-haptic ${
-                  filters.activeFilterCount > 0
-                    ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
-                    : 'bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/10'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                  />
-                </svg>
-                {filters.activeFilterCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-indigo-500 text-white text-xs font-bold flex items-center justify-center">
-                    {filters.activeFilterCount}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* Preset Quick Filter Chips */}
-            <MobilePresetChips
-              selectedBrands={filters.selectedBrands}
-              toggleBrand={filters.toggleBrand}
-              statusFilter={filters.statusFilter}
-              setStatusFilter={filters.setStatusFilter}
-              selectedDisciplines={filters.selectedDisciplines}
-              toggleDiscipline={filters.toggleDiscipline}
-              disciplinesWithCount={filters.disciplinesWithCount}
-            />
-
-            {/* Active Filters Summary */}
-            {hasActiveFilters && (
-              <div className="flex items-center gap-2 flex-wrap mt-3">
-                <span className="text-xs text-zinc-600">활성:</span>
-                {filters.selectedBrands.size > 0 && (
-                  <ActiveFilterBadge label={`브랜드 ${filters.selectedBrands.size}`} color="indigo" />
-                )}
-                {filters.selectedDisciplines.size > 0 && (
-                  <ActiveFilterBadge label={`종목 ${filters.selectedDisciplines.size}`} color="sky" />
-                )}
-                {filters.selectedTypes.size > 0 && (
-                  <ActiveFilterBadge label={`유형 ${filters.selectedTypes.size}`} color="violet" />
-                )}
-                {filters.statusFilter !== 'all' && (
-                  <ActiveFilterBadge
-                    label={filters.statusFilter === 'valid' ? '유효' : filters.statusFilter === 'expiring' ? '만료임박' : '만료됨'}
-                    color={filters.statusFilter === 'valid' ? 'emerald' : filters.statusFilter === 'expiring' ? 'amber' : 'red'}
-                  />
-                )}
-                <button
-                  onClick={handleClearAll}
-                  className="px-2 py-1 rounded-lg text-xs text-zinc-500 hover:text-white hover:bg-white/5 transition-all"
-                >
-                  초기화
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Main Content - Rendered Once */}
-          <MainContent
-            shoes={shoes}
-            filteredShoes={filteredShoes}
-            newestShoes={newestShoes}
-            groupedShoes={groupedShoes}
-            sortedBrands={sortedBrands}
-            hasActiveFilters={hasActiveFilters}
-            onSelectShoe={handleSelectShoe}
-            onClearFilters={handleClearAll}
-          />
-        </div>
-      </div>
-
-      {/* Mobile Bottom Sheet */}
-      <BottomSheet
-        isOpen={showMobileFilters}
-        onClose={() => setShowMobileFilters(false)}
-        title="필터"
-        footer={
-          <button
-            onClick={() => setShowMobileFilters(false)}
-            className="w-full py-3.5 rounded-xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 active:scale-[0.98] transition-all"
-          >
-            {filteredShoes.length}개 결과 보기
-          </button>
-        }
-      >
-        <MobileFilter {...filterProps} />
-      </BottomSheet>
-
-      {/* Modal with Suspense for lazy loading */}
-      {selectedShoe && (
-        <Suspense
-          fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-              <div className="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          }
-        >
-          <ShoeModal
-            shoe={selectedShoe}
-            onClose={handleCloseModal}
-            onPrev={handlePrevShoe}
-            onNext={handleNextShoe}
-            hasPrev={selectedShoeIndex !== null && selectedShoeIndex > 0}
-            hasNext={selectedShoeIndex !== null && selectedShoeIndex < filteredShoes.length - 1}
-          />
-        </Suspense>
-      )}
-    </>
+  const goTo = useCallback(
+    (delta: 1 | -1) => {
+      const next = filteredShoes[selectedIndex + delta];
+      if (selectedIndex < 0 || !next) return;
+      setNavDirection(delta > 0 ? 'right' : 'left');
+      setSelectedId(next.productApplicationuuid);
+    },
+    [filteredShoes, selectedIndex]
   );
-}
+  const showPrev = useCallback(() => goTo(-1), [goTo]);
+  const showNext = useCallback(() => goTo(1), [goTo]);
 
-// Main content component (shared between layouts)
-interface MainContentProps {
-  shoes: Shoe[];
-  filteredShoes: Shoe[];
-  newestShoes: Shoe[];
-  groupedShoes: Record<string, Shoe[]>;
-  sortedBrands: string[];
-  hasActiveFilters: boolean;
-  onSelectShoe: (shoe: Shoe) => void;
-  onClearFilters: () => void;
-}
+  // ---------- 필터: 목록 밖에서 바꿀 때는 카드가 새 자리로 미끄러진다 ----------
 
-function MainContent({
-  shoes,
-  filteredShoes,
-  newestShoes,
-  groupedShoes,
-  sortedBrands,
-  hasActiveFilters,
-  onSelectShoe,
-  onClearFilters,
-}: MainContentProps) {
+  const withTransition = useCallback((update: () => void) => {
+    runViewTransition('filter', () => flushSync(update));
+  }, []);
+
+  const { toggleBrand, toggleDiscipline, toggleType, setStatusFilter, setSortBy, clearAllFilters } = filters;
+  const { clearSearch } = search;
+
+  const animatedToggleBrand = useCallback((brand: string) => withTransition(() => toggleBrand(brand)), [withTransition, toggleBrand]);
+  const animatedClearBrands = useCallback(
+    () => withTransition(() => selectedBrands.forEach((brand) => toggleBrand(brand))),
+    [withTransition, selectedBrands, toggleBrand]
+  );
+  const animatedSetStatus = useCallback((status: StatusFilter) => withTransition(() => setStatusFilter(status)), [withTransition, setStatusFilter]);
+  const animatedSetSort = useCallback((sort: SortOption) => withTransition(() => setSortBy(sort)), [withTransition, setSortBy]);
+  const animatedClearAll = useCallback(
+    () =>
+      withTransition(() => {
+        clearAllFilters();
+        clearSearch();
+      }),
+    [withTransition, clearAllFilters, clearSearch]
+  );
+  const closeFilterPanel = useCallback(() => setFilterOpen(false), []);
+
+  const activeChips = [
+    ...(search.searchQuery ? [{ key: 'q', label: `"${search.searchQuery}"`, onRemove: clearSearch }] : []),
+    ...(statusFilter !== 'all'
+      ? [
+          {
+            key: 'status',
+            label: STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? '',
+            onRemove: () => animatedSetStatus('all'),
+          },
+        ]
+      : []),
+    ...[...selectedBrands].map((brand) => ({ key: `b-${brand}`, label: brand, onRemove: () => animatedToggleBrand(brand) })),
+    ...[...selectedDisciplines].map((d) => ({
+      key: `d-${d}`,
+      label: getDisplayName(d),
+      onRemove: () => withTransition(() => toggleDiscipline(d)),
+    })),
+    ...[...selectedTypes].map((t) => ({ key: `t-${t}`, label: t, onRemove: () => withTransition(() => toggleType(t)) })),
+  ];
+
   return (
-    <>
-      {/* Results count */}
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-zinc-500">
-          <span className="text-white font-medium tabular-nums">{filteredShoes.length}</span>개 결과
-          {filteredShoes.length !== shoes.length && (
-            <span className="text-zinc-600 ml-1">/ 전체 {shoes.length}</span>
-          )}
+    <section id="catalog" className="relative mx-auto max-w-[1400px] scroll-mt-2 px-4 pb-24 pt-14 sm:px-6 lg:pt-20">
+      <div className="flex items-end justify-between gap-6">
+        <div>
+          <p className="eyebrow">Catalog</p>
+          <h2 className="mt-3 text-[clamp(30px,4.4vw,48px)] font-bold leading-[1.1] tracking-[-0.04em] text-fg">전체 목록</h2>
+        </div>
+        <p className="pb-1 text-[15px] text-fg-3" aria-live="polite">
+          <span className="font-semibold tabular-nums text-fg">{filteredShoes.length}</span>
+          {filteredShoes.length !== shoes.length && <span className="tabular-nums"> / {shoes.length}</span>}
+          켤레
         </p>
       </div>
 
-      {/* Newest Section */}
-      {!hasActiveFilters && (
-        <section className="mb-8">
-          <SectionHeader title="최신 등록" badge="NEW" count={newestShoes.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
-            {newestShoes.map((shoe) => (
-              <ShoeCard
-                key={`newest-${shoe.productApplicationuuid}`}
-                shoe={shoe}
-                onClick={() => onSelectShoe(shoe)}
-                isNew
-              />
-            ))}
+      <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+
+      {/* 상단에 붙는 도구 막대 */}
+      <div className="catalog-toolbar sticky top-16 z-40 -mx-4 mt-5 px-4 py-3 sm:-mx-6 sm:px-6" data-stuck={stuck}>
+        <div className="catalog-toolbar-bg absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 border-b border-line bg-canvas/80 backdrop-blur-xl backdrop-saturate-150" />
+        <div className="relative flex items-center gap-2 lg:gap-3">
+          <SearchBar
+            searchInput={search.searchInput}
+            setSearchInput={search.setSearchInput}
+            isSearching={search.isSearching}
+            clearSearch={clearSearch}
+          />
+          <StatusSegment
+            value={statusFilter}
+            onChange={animatedSetStatus}
+            counts={filters.statusCounts}
+            className="hidden w-[380px] shrink-0 lg:grid"
+          />
+          <div className="hidden lg:block">
+            <SortMenu value={sortBy} onChange={animatedSetSort} />
           </div>
-        </section>
+          <div className="lg:hidden">
+            <SortMenu value={sortBy} onChange={animatedSetSort} compact />
+          </div>
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            aria-label={`필터${filters.activeFilterCount > 0 ? `, ${filters.activeFilterCount}개 적용됨` : ''}`}
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-control text-[14px] font-medium text-fg transition-colors duration-200 hover:bg-control-hover lg:w-auto lg:pl-4 lg:pr-3.5"
+          >
+            <SlidersIcon className="h-[18px] w-[18px]" />
+            <span className="hidden lg:inline">필터</span>
+            {filters.activeFilterCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-volt px-1 text-[11px] font-bold tabular-nums text-volt-ink lg:static">
+                {filters.activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-2">
+        <BrandRail
+          brands={filters.brandsWithCount}
+          selected={selectedBrands}
+          total={shoes.length}
+          onToggle={animatedToggleBrand}
+          onClear={animatedClearBrands}
+        />
+      </div>
+
+      {hasActiveFilters && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {activeChips.map((chip) => (
+            <span
+              key={chip.key}
+              className="flex h-8 items-center gap-1 rounded-full bg-white/[0.06] pl-3 pr-1 text-[13px] text-fg-2"
+            >
+              <span className="max-w-[200px] truncate">{chip.label}</span>
+              <button
+                type="button"
+                onClick={chip.onRemove}
+                aria-label={`${chip.label} 필터 해제`}
+                className="grid h-6 w-6 place-items-center rounded-full text-fg-3 transition-colors duration-150 hover:bg-white/10 hover:text-fg"
+              >
+                <CloseIcon className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={animatedClearAll}
+            className="h-8 rounded-full px-3 text-[13px] font-medium text-fg-3 underline-offset-4 transition-colors duration-150 hover:text-fg hover:underline"
+          >
+            모두 지우기
+          </button>
+        </div>
       )}
 
-      {/* Brand Sections */}
-      {sortedBrands.map((brand, idx) => (
-        <section key={brand} className="mb-8">
-          {idx > 0 && <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-6" />}
-          <SectionHeader title={brand} count={groupedShoes[brand].length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger-bounce">
-            {groupedShoes[brand].map((shoe) => (
-              <ShoeCard
-                key={shoe.productApplicationuuid}
-                shoe={shoe}
-                onClick={() => onSelectShoe(shoe)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {/* Empty State */}
-      {filteredShoes.length === 0 && (
-        <EmptyState hasActiveFilters={hasActiveFilters} onClearFilters={onClearFilters} />
+      {filteredShoes.length > 0 ? (
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
+          {filteredShoes.map((shoe) => (
+            <ShoeCard
+              key={shoe.productApplicationuuid}
+              shoe={shoe}
+              onOpen={openShoe}
+              isNew={newIds.has(shoe.productApplicationuuid)}
+              lifted={shoe.productApplicationuuid === selectedId}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState hasActiveFilters={hasActiveFilters} onClearFilters={animatedClearAll} />
       )}
-    </>
+
+      {filterOpen && (
+        <FilterPanel
+          onClose={closeFilterPanel}
+          resultCount={filteredShoes.length}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          statusCounts={filters.statusCounts}
+          brandsWithCount={filters.brandsWithCount}
+          selectedBrands={selectedBrands}
+          toggleBrand={toggleBrand}
+          disciplinesWithCount={filters.disciplinesWithCount}
+          selectedDisciplines={selectedDisciplines}
+          toggleDiscipline={toggleDiscipline}
+          typesWithCount={filters.typesWithCount}
+          selectedTypes={selectedTypes}
+          toggleType={toggleType}
+          activeFilterCount={filters.activeFilterCount}
+          clearAllFilters={clearAllFilters}
+        />
+      )}
+
+      {selectedShoe && (
+        <ShoeModal
+          shoe={selectedShoe}
+          index={selectedIndex}
+          total={filteredShoes.length}
+          isNew={newIds.has(selectedShoe.productApplicationuuid)}
+          closing={closingModal}
+          direction={navDirection}
+          onClose={closeShoe}
+          onPrev={showPrev}
+          onNext={showNext}
+          hasPrev={selectedIndex > 0}
+          hasNext={selectedIndex < filteredShoes.length - 1}
+        />
+      )}
+    </section>
   );
 }

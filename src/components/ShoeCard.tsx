@@ -1,39 +1,59 @@
 'use client';
 
-import { useState, useCallback, memo } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import Image from 'next/image';
 import { Shoe } from '@/types/shoe';
-import { IMAGE_BASE_URL } from '@/constants';
-import { getStatusInfo } from '@/utils/date';
-import { getProgressPercent } from '@/utils/progress';
+import { CARD_IMAGE_SIZES, IMAGE_BASE_URL } from '@/constants';
+import { formatShortDate, getStatusInfo } from '@/utils/date';
+import { getDisplayName } from '@/utils/displayNames';
+import { getRemainingRatio } from '@/utils/progress';
+import { observeReveal } from '@/lib/motion';
+import { ArrowUpRightIcon, ImageOffIcon } from './icons';
 
 interface ShoeCardProps {
   shoe: Shoe;
-  onClick: () => void;
+  /** 상세 열기. 부모가 고정된 함수를 넘긴다 */
+  onOpen: (id: string) => void;
   isNew?: boolean;
+  /** 상세 화면이 이 카드 사진을 가져가 있는 동안 카드 사진을 숨긴다 */
+  lifted?: boolean;
 }
 
 const MAX_RETRY_COUNT = 1;
 
-function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+function ShoeCardComponent({ shoe, onOpen, isNew = false, lifted = false }: ShoeCardProps) {
+  const id = shoe.productApplicationuuid;
+  const articleRef = useRef<HTMLElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const status = getStatusInfo(shoe.certificationEndDateExp);
-  const progressPercent = getProgressPercent(status.remainingDays);
 
-  const handleImageError = useCallback(() => {
+  const status = getStatusInfo(shoe.certificationEndDateExp);
+  const ratio = getRemainingRatio(shoe.certificationStartDateExp, shoe.certificationEndDateExp);
+  const disciplines = shoe.disciplines.map((d) => getDisplayName(d.name)).join(', ');
+  const isSpike = shoe.shoeType === 'Spike';
+
+  useEffect(() => observeReveal(articleRef.current), []);
+
+  const handleError = useCallback(() => {
     if (retryCount < MAX_RETRY_COUNT) {
       setRetryCount((prev) => prev + 1);
-      setImageLoaded(false);
+      setLoaded(false);
     } else {
-      setImageError(true);
+      setFailed(true);
     }
   }, [retryCount]);
 
-  const handleImageLoad = useCallback(() => {
-    setImageLoaded(true);
-  }, []);
+  // 커서를 따라가는 빛: 진입할 때 위치를 한 번 재고, 움직일 때는 CSS 변수만 바꾼다
+  const handlePointerEnter = (e: PointerEvent<HTMLDivElement>) => {
+    rectRef.current = e.currentTarget.getBoundingClientRect();
+  };
+  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse' || !rectRef.current) return;
+    e.currentTarget.style.setProperty('--mx', `${e.clientX - rectRef.current.left}px`);
+    e.currentTarget.style.setProperty('--my', `${e.clientY - rectRef.current.top}px`);
+  };
 
   const imageUrl = shoe.imageDocumentuuid
     ? `${IMAGE_BASE_URL}${shoe.imageDocumentuuid}${retryCount > 0 ? `?retry=${retryCount}` : ''}`
@@ -41,114 +61,98 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
 
   return (
     <article
-      onClick={onClick}
-      className="card-new group relative cursor-pointer overflow-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-      tabIndex={0}
-      role="button"
-      aria-label={`${shoe.manufacturerName} ${shoe.productName} - ${status.text}`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick();
-        }
-      }}
+      ref={articleRef}
+      className="shoe-card reveal relative"
+      data-lifted={lifted}
+      style={{ '--vt-name': `card-${id}` } as CSSProperties}
     >
-      {/* Image Container */}
-      <div className="relative aspect-[16/10] bg-black/40 overflow-hidden">
-        {/* Skeleton loader */}
-        {!imageLoaded && !imageError && imageUrl && (
-          <div className="absolute inset-0 skeleton">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-3xl font-bold text-zinc-800/50 uppercase tracking-widest">
-                {shoe.manufacturerName.slice(0, 2)}
-              </span>
-            </div>
-          </div>
-        )}
+      <div
+        className="shoe-card-inner relative isolate h-full overflow-hidden rounded-card border border-line bg-surface"
+        onPointerEnter={handlePointerEnter}
+        onPointerMove={handlePointerMove}
+      >
+        {/* 사진 판: 같은 사진을 흐리게 깔아 빈 곳을 사진 자신의 색으로 채운다 */}
+        <div className="shoe-media relative m-1.5 aspect-[4/3] overflow-hidden rounded-[15px] bg-raised" data-media={id}>
+          {imageUrl && !failed ? (
+            <>
+              {!loaded && <div className="skeleton absolute inset-0" />}
+              <Image
+                src={imageUrl}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes={CARD_IMAGE_SIZES}
+                className="shoe-media-ambient scale-125 object-cover blur-2xl saturate-150"
+                style={{ opacity: loaded ? 0.9 : 0 }}
+              />
+              <Image
+                data-fg=""
+                data-loaded={loaded}
+                src={imageUrl}
+                alt={`${shoe.manufacturerName} ${shoe.productName}`}
+                fill
+                sizes={CARD_IMAGE_SIZES}
+                className="shoe-media-fg object-contain p-2.5 sm:p-3"
+                style={{ opacity: loaded ? 1 : 0 }}
+                onLoad={() => setLoaded(true)}
+                onError={handleError}
+              />
+            </>
+          ) : (
+            <MediaFallback brand={shoe.manufacturerName} />
+          )}
 
-        {imageUrl && !imageError ? (
-          <Image
-            src={imageUrl}
-            alt={shoe.productName}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className={`object-contain p-8 transition-all duration-700 ${
-              imageLoaded
-                ? 'opacity-100 scale-100 blur-0'
-                : 'opacity-0 scale-[0.97] blur-sm'
-            } group-hover:scale-105 group-hover:rotate-1`}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            loading="lazy"
-            unoptimized
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-800/50 flex items-center justify-center mb-3">
-                <svg
-                  className="w-8 h-8 text-zinc-700"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <span className="text-xs text-zinc-600">이미지 없음</span>
-            </div>
-          </div>
-        )}
+          <div className="pointer-events-none absolute inset-0 rounded-[15px] ring-1 ring-inset ring-white/[0.06]" />
 
-        {/* Top shine effect on hover */}
-        <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      </div>
-
-      {/* Glow line separator */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent group-hover:via-indigo-500/40 transition-all duration-700" />
-
-      {/* Content */}
-      <div className="p-6">
-        {/* Brand + NEW badge */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[11px] font-medium uppercase tracking-[0.05em] text-zinc-500">
-            {shoe.manufacturerName}
-          </span>
           {isNew && (
-            <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
-              New
+            <span className="absolute left-2.5 top-2.5 rounded-full bg-volt px-2 py-[3px] text-[10px] font-bold leading-none tracking-[0.08em] text-volt-ink">
+              NEW
+            </span>
+          )}
+          {isSpike && (
+            <span className="absolute right-2.5 top-2.5 rounded-full bg-black/55 px-2 py-[3px] text-[10px] font-semibold leading-none tracking-[0.06em] text-fg backdrop-blur-md">
+              SPIKE
             </span>
           )}
         </div>
 
-        {/* Product Name */}
-        <h3 className="font-medium text-lg text-white line-clamp-2 break-words mb-2 group-hover:text-indigo-300 transition-colors duration-300">
-          {shoe.productName}
-        </h3>
-
-        {/* Type */}
-        <p className="text-sm text-zinc-500 mb-4">{shoe.shoeType}</p>
-
-        {/* D-day Status Box */}
-        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-          <div className="mb-2">
-            <span className={`text-sm font-semibold ${status.colors.text}`}>
-              {status.text}
-            </span>
+        <div className="px-3.5 pb-4 pt-2.5 sm:px-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-[12px] font-medium text-fg-3" title={shoe.manufacturerName}>
+              {shoe.manufacturerName}
+            </p>
+            <ArrowUpRightIcon className="shoe-card-arrow h-4 w-4 shrink-0 text-fg-2" />
           </div>
 
-          {/* Progress bar */}
-          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${status.colors.bar} transition-all duration-700 ease-out`}
-              style={{ width: `${progressPercent}%` }}
-            />
+          <h3 className="mt-1 line-clamp-2 min-h-[2.6em] text-[15px] font-semibold leading-[1.3] tracking-[-0.02em] text-fg break-words sm:text-[17px]">
+            <button
+              type="button"
+              data-card-button={id}
+              onClick={() => onOpen(id)}
+              aria-label={`${shoe.manufacturerName} ${shoe.productName}, ${status.text}`}
+              className="text-left outline-none after:absolute after:inset-0 after:z-[2] after:content-['']"
+            >
+              {shoe.productName}
+            </button>
+          </h3>
+
+          <p className="mt-1.5 truncate text-[12px] text-fg-3" title={disciplines}>
+            {disciplines}
+          </p>
+
+          <div className="mt-4 flex items-baseline justify-between gap-2">
+            <span className={`text-[15px] font-bold tabular-nums tracking-[-0.02em] sm:text-[16px] ${status.colors.text}`}>
+              {status.text}
+            </span>
+            {shoe.certificationEndDateExp && (
+              <span className="text-[11px] tabular-nums text-fg-3 sm:text-[12px]">
+                {formatShortDate(shoe.certificationEndDateExp)}까지
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2 h-[3px] overflow-hidden rounded-full bg-white/[0.07]">
+            <div className={`bar-fill h-full rounded-full ${status.colors.bar}`} style={{ '--ratio': ratio } as CSSProperties} />
           </div>
         </div>
       </div>
@@ -156,11 +160,26 @@ function ShoeCardComponent({ shoe, onClick, isNew }: ShoeCardProps) {
   );
 }
 
-// React.memo로 불필요한 리렌더링 방지
-const ShoeCard = memo(ShoeCardComponent, (prevProps, nextProps) => {
+function MediaFallback({ brand }: { brand: string }) {
   return (
-    prevProps.shoe.productApplicationuuid === nextProps.shoe.productApplicationuuid &&
-    prevProps.isNew === nextProps.isNew
+    <div className="absolute inset-0 grid place-items-center bg-raised">
+      <div className="flex flex-col items-center gap-2 text-fg-4">
+        <span className="text-[28px] font-extrabold uppercase tracking-[-0.02em]">{brand.slice(0, 2)}</span>
+        <span className="flex items-center gap-1 text-[11px]">
+          <ImageOffIcon className="h-3.5 w-3.5" />
+          사진 없음
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const ShoeCard = memo(ShoeCardComponent, (prev, next) => {
+  return (
+    prev.shoe.productApplicationuuid === next.shoe.productApplicationuuid &&
+    prev.isNew === next.isNew &&
+    prev.lifted === next.lifted &&
+    prev.onOpen === next.onOpen
   );
 });
 

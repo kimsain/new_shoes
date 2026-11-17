@@ -1,36 +1,86 @@
 @import "tailwindcss";
 
 /* ============================================
-   CSS VARIABLES
+   DESIGN TOKENS
+   Tailwind 유틸리티로 쓰인다: bg-canvas, text-fg-2, border-line, bg-volt ...
    ============================================ */
 
-:root {
-  --background: #000000;
-  --foreground: #fafafa;
-  --accent-indigo: #6366f1;
-  --accent-violet: #8b5cf6;
-  --card-bg: #0a0a0a;
-  --card-hover: #111111;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --glow-indigo: rgba(99, 102, 241, 0.4);
-  --glow-violet: rgba(139, 92, 246, 0.4);
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Malgun Gothic", system-ui, sans-serif;
+
+  /* 바탕 */
+  --color-canvas: #0a0b0c;
+  --color-surface: #111214;
+  --color-raised: #17191b;
+  --color-control: #1d1f22;
+  --color-control-hover: #26292c;
+
+  /* 선 */
+  --color-line: rgb(255 255 255 / 0.07);
+  --color-line-strong: rgb(255 255 255 / 0.13);
+
+  /* 글자 */
+  --color-fg: #f4f5f6;
+  --color-fg-2: #b3b9c4;
+  --color-fg-3: #7c8391;
+  --color-fg-4: #565c67;
+
+  /* 강조와 상태 */
+  --color-volt: #d4fa3c;
+  --color-volt-ink: #0a0b0c;
+  --color-warn: #ffb224;
+  --color-hot: #ff6a3d;
+
+  --radius-card: 20px;
+
+  /* 모션: 들어올 때 ease-out, 나갈 때 ease-in, 큰 이동은 emphasized */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* ============================================
-   BASE STYLES
+   BASE
    ============================================ */
 
 html {
+  background: var(--color-canvas);
+  color-scheme: dark;
+  scrollbar-gutter: stable;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow-x: clip;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss06";
+}
+
+::selection {
+  background: var(--color-volt);
+  color: var(--color-volt-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-volt);
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
 }
 
 /* ============================================
@@ -38,8 +88,8 @@ body {
    ============================================ */
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -47,12 +97,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgb(255 255 255 / 0.1);
+  border: 3px solid var(--color-canvas);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 0.2);
 }
 
 .scrollbar-hide {
@@ -64,551 +115,12 @@ body {
   display: none;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 4px;
-}
-
 /* ============================================
-   GLOW ORBS (Hero Background)
-   ============================================ */
-
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-}
-
-/* Orb 1 - Indigo (center-top, largest) */
-.glow-orb-1 {
-  width: 700px;
-  height: 700px;
-  background: rgba(99, 102, 241, 0.25);
-  top: -200px;
-  left: calc(50% - 350px); /* centered: 50% minus half width */
-  animation: orb-float 20s ease-in-out infinite;
-}
-
-/* Orb 2 - Violet (right side) */
-.glow-orb-2 {
-  width: 500px;
-  height: 500px;
-  background: rgba(139, 92, 246, 0.2);
-  top: 50px;
-  right: -100px; /* positioned more to the right edge */
-  animation: orb-float 20s ease-in-out infinite -7s;
-}
-
-/* Orb 3 - Cyan (left-bottom) */
-.glow-orb-3 {
-  width: 400px;
-  height: 400px;
-  background: rgba(6, 182, 212, 0.15);
-  bottom: -100px;
-  left: -50px; /* positioned more to the left edge */
-  animation: orb-float 20s ease-in-out infinite -14s;
-}
-
-@keyframes orb-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(20px, -20px) scale(1.03); }
-  50% { transform: translate(-10px, 10px) scale(0.98); }
-  75% { transform: translate(15px, 15px) scale(1.02); }
-}
-
-/* ============================================
-   HERO SECTION ANIMATIONS
-   ============================================ */
-
-/* Badge entrance - soft blur-to-sharp float up */
-.hero-badge {
-  animation: hero-badge-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes hero-badge-in {
-  0% {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-    filter: blur(6px);
-  }
-  60% {
-    filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-  }
-}
-
-/* Description entrance - delayed soft reveal */
-.hero-description {
-  animation: hero-desc-in 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
-}
-
-@keyframes hero-desc-in {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-    filter: blur(4px);
-  }
-  50% {
-    filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0px);
-  }
-}
-
-/* Activation Beam - responsive sizing */
-.hero-beam {
-  position: relative;
-  height: 1px;
-  margin: 16px auto 18px;
-  max-width: 260px;
-}
-
-@media (min-width: 1024px) {
-  .hero-beam {
-    max-width: 420px;
-    margin: 20px auto 22px;
-  }
-}
-
-/* Sharp 1px gradient line */
-.hero-beam::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(99, 102, 241, 0.5) 15%,
-    rgba(167, 139, 250, 0.7) 50%,
-    rgba(99, 102, 241, 0.5) 85%,
-    transparent 100%
-  );
-  border-radius: 1px;
-  animation: beam-expand 2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-}
-
-/* Soft glow behind the line */
-.hero-beam::after {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 5%;
-  right: 5%;
-  height: 17px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(99, 102, 241, 0.25) 25%,
-    rgba(139, 92, 246, 0.35) 50%,
-    rgba(99, 102, 241, 0.25) 75%,
-    transparent 100%
-  );
-  filter: blur(8px);
-  border-radius: 50%;
-  animation: beam-glow 2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
-}
-
-@keyframes beam-expand {
-  0% {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  60% {
-    transform: scaleX(1);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scaleX(1);
-    opacity: 0.3;
-  }
-}
-
-@keyframes beam-glow {
-  0% {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  40% {
-    opacity: 0.8;
-  }
-  60% {
-    transform: scaleX(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scaleX(1);
-    opacity: 0.25;
-  }
-}
-
-/* ============================================
-   CARD STYLES
-   ============================================ */
-
-.card-new {
-  background: linear-gradient(180deg, #0a0a0a 0%, #111111 100%);
-  border: 1px solid var(--border-subtle);
-  border-radius: 24px;
-  overflow: hidden;
-  transition:
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.card-new:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  transform: translateY(-6px);
-  box-shadow:
-    0 0 0 1px rgba(99, 102, 241, 0.15),
-    0 16px 32px -16px rgba(0, 0, 0, 0.5),
-    0 0 48px -16px rgba(99, 102, 241, 0.35);
-}
-
-.card-new:hover .card-image {
-  transform: scale(1.05) rotate(1deg);
-}
-
-/* ============================================
-   GLASS EFFECT
-   ============================================ */
-
-.glass {
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border: 1px solid var(--border-subtle);
-}
-
-/* ============================================
-   MODAL STYLES
-   ============================================ */
-
-/* Modal content stagger */
-.modal-stagger > * {
-  animation: stagger-in 0.4s ease-out backwards;
-}
-
-.modal-stagger > *:nth-child(1) { animation-delay: 0.1s; }
-.modal-stagger > *:nth-child(2) { animation-delay: 0.15s; }
-.modal-stagger > *:nth-child(3) { animation-delay: 0.2s; }
-.modal-stagger > *:nth-child(4) { animation-delay: 0.25s; }
-.modal-stagger > *:nth-child(5) { animation-delay: 0.3s; }
-
-/* Individual stagger classes for direct application */
-.modal-stagger-1 { animation: stagger-in 0.4s ease-out 0.1s backwards; }
-.modal-stagger-2 { animation: stagger-in 0.4s ease-out 0.15s backwards; }
-.modal-stagger-3 { animation: stagger-in 0.4s ease-out 0.2s backwards; }
-.modal-stagger-4 { animation: stagger-in 0.4s ease-out 0.25s backwards; }
-.modal-stagger-5 { animation: stagger-in 0.4s ease-out 0.3s backwards; }
-.modal-stagger-6 { animation: stagger-in 0.4s ease-out 0.35s backwards; }
-
-@keyframes stagger-in {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-    filter: blur(2px);
-  }
-  60% {
-    filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0px);
-  }
-}
-
-/* Modal zoom animation */
-@keyframes modal-zoom-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.97) translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes modal-zoom-out {
-  0% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.97) translateY(6px);
-  }
-}
-
-.modal-zoom-enter {
-  animation: modal-zoom-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.modal-zoom-exit {
-  animation: modal-zoom-out 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* Modal crossfade transitions (prev/next navigation) */
-@keyframes crossfade-from-left {
-  0% {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes crossfade-from-right {
-  0% {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.modal-crossfade-from-left {
-  animation: crossfade-from-left 250ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.modal-crossfade-from-right {
-  animation: crossfade-from-right 250ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* ============================================
-   ANIMATIONS - FADE
-   ============================================ */
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.animate-fade-up {
-  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.animate-fade-out {
-  animation: fade-out 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* ============================================
-   ANIMATIONS - SLIDE
-   ============================================ */
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-in-bottom {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.animate-slide-in-bottom {
-  animation: slide-in-bottom 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes slide-out-bottom {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(100%); opacity: 0; }
-}
-
-.animate-slide-out-bottom {
-  animation: slide-out-bottom 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* ============================================
-   ANIMATIONS - SHIMMER
-   ============================================ */
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.02) 25%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.02) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-/* ============================================
-   TOGGLE CHIP STYLES
-   ============================================ */
-
-.toggle-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  min-width: 0;
-  width: 100%;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  color: #a1a1aa;
-  font-size: 13px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  text-align: left;
-}
-
-.toggle-chip:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  color: white;
-}
-
-.toggle-chip.active {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.5);
-  color: #a5b4fc;
-}
-
-/* ============================================
-   SEGMENT CONTROL
-   ============================================ */
-
-.segment-control {
-  display: flex;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-  padding: 3px;
-  gap: 2px;
-}
-
-.segment-item {
-  flex: 1;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #71717a;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  text-align: center;
-}
-
-.segment-item:hover {
-  color: #a1a1aa;
-}
-
-.segment-item.active {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-}
-
-/* ============================================
-   FILTER LIST ITEM
-   ============================================ */
-
-.filter-list-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #71717a;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.filter-list-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-  color: #a1a1aa;
-}
-
-.filter-list-item.active {
-  background: rgba(99, 102, 241, 0.1);
-  color: #a5b4fc;
-}
-
-/* ============================================
-   PROGRESS BAR
-   ============================================ */
-
-.progress-bar {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.6s ease-out;
-}
-
-/* ============================================
-   SEARCH BAR
-   ============================================ */
-
-.search-bar-container:focus-within .search-input {
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-}
-
-/* ============================================
-   UTILITY CLASSES
+   UTILITIES
    ============================================ */
 
 .break-words {
-  word-break: break-word;
+  word-break: keep-all;
   overflow-wrap: break-word;
 }
 
@@ -616,66 +128,674 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.will-change-transform {
-  will-change: transform;
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fg-3);
 }
 
-/* ============================================
-   STAGGER BOUNCE (Card Grid Animation)
-   ============================================ */
+.spinner {
+  animation: spin 800ms linear infinite;
+}
 
-@keyframes stagger-bounce {
-  0% {
-    opacity: 0;
-    transform: translateY(16px) scale(0.97);
-  }
-  70% {
-    transform: translateY(-2px) scale(1.005);
-  }
-  100% {
+/* CountUp: 하이드레이션 전에는 숨기고, 1.5초가 지나도 시작하지 않으면 최종 값을 그냥 보여준다 */
+html.js .countup-pending {
+  opacity: 0;
+  animation: countup-fallback 200ms linear 1500ms forwards;
+}
+
+@keyframes countup-fallback {
+  to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
-.stagger-bounce > * {
-  animation: stagger-bounce 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-
-.stagger-bounce > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger-bounce > *:nth-child(2) { animation-delay: 0.1s; }
-.stagger-bounce > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger-bounce > *:nth-child(4) { animation-delay: 0.2s; }
-.stagger-bounce > *:nth-child(5) { animation-delay: 0.25s; }
-.stagger-bounce > *:nth-child(6) { animation-delay: 0.3s; }
-.stagger-bounce > *:nth-child(7) { animation-delay: 0.35s; }
-.stagger-bounce > *:nth-child(8) { animation-delay: 0.4s; }
-.stagger-bounce > *:nth-child(9) { animation-delay: 0.45s; }
-
 /* ============================================
-   BUTTON HAPTIC FEEDBACK
+   KEYFRAMES
    ============================================ */
 
-.btn-haptic {
-  transition:
-    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
-.btn-haptic:active {
-  transform: scale(0.97);
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes live-ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes bar-in {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 /* ============================================
-   ACCESSIBILITY
+   ENTRANCE HELPERS
+   ============================================ */
+
+.anim-rise {
+  animation: rise 400ms var(--ease-out) calc(var(--i, 0) * 80ms + var(--delay, 0ms)) both;
+}
+
+.anim-fade {
+  animation: fade-in 600ms var(--ease-out) var(--delay, 0ms) both;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.site-header {
+  view-transition-name: site-header;
+  transition: transform 300ms var(--ease-out);
+}
+
+.site-header-bg {
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.site-header[data-scrolled="true"] .site-header-bg {
+  opacity: 1;
+}
+
+@media (max-width: 1023px) {
+  html[data-header-hidden="true"] .site-header {
+    transform: translateY(-100%);
+    transition: transform 250ms var(--ease-in);
+  }
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+
+.hero-glow {
+  background:
+    radial-gradient(60% 50% at 18% 30%, rgb(212 250 60 / 0.09), transparent 70%),
+    radial-gradient(50% 60% at 85% 20%, rgb(120 140 255 / 0.07), transparent 70%);
+}
+
+.hero-noise {
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.hero-grid-lines {
+  background-image: linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: calc(100% / 6) 100%;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: live-ping 2s var(--ease-out) infinite;
+}
+
+/* 사진 벽: 3D로 기울인 평면 위에서 줄마다 반대로 흐른다 */
+.wall-stage {
+  perspective: 1600px;
+}
+
+/* 가장자리를 투명하게 지워 벽이 배경 속으로 사라지게 한다 */
+.wall-mask {
+  mask-image:
+    linear-gradient(to right, transparent 0%, #000 22%, #000 88%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-composite: intersect;
+}
+
+@media (min-width: 1024px) {
+  .wall-mask {
+    mask-image:
+      linear-gradient(to right, transparent 0%, #000 38%),
+      linear-gradient(to bottom, transparent 2%, #000 22%, #000 80%, transparent 98%);
+  }
+}
+
+.wall-enter {
+  animation: wall-in 1200ms var(--ease-emphasized) 200ms both;
+}
+
+@keyframes wall-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+
+.wall-plane {
+  transform: rotateX(20deg) rotateY(-16deg) rotateZ(8deg);
+  transform-style: preserve-3d;
+}
+
+.wall-track {
+  animation: marquee var(--duration, 80s) linear infinite;
+}
+
+.wall-track[data-reverse="true"] {
+  animation-name: marquee-reverse;
+}
+
+.wall-stage:hover .wall-track {
+  animation-play-state: paused;
+}
+
+@supports (animation-timeline: view()) {
+  .hero-scroll-copy {
+    animation: hero-copy-exit linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+  }
+
+  .hero-scroll-wall {
+    animation: hero-wall-exit linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+  }
+}
+
+@keyframes hero-copy-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-80px);
+  }
+}
+
+@keyframes hero-wall-exit {
+  to {
+    opacity: 0.2;
+    transform: translateY(60px) scale(0.96);
+  }
+}
+
+/* ============================================
+   CATALOG TOOLBAR
+   ============================================ */
+
+.catalog-toolbar {
+  view-transition-name: catalog-toolbar;
+  transition: transform 300ms var(--ease-out);
+}
+
+.catalog-toolbar-bg {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+
+.catalog-toolbar[data-stuck="true"] .catalog-toolbar-bg {
+  opacity: 1;
+}
+
+@media (max-width: 1023px) {
+  html[data-header-hidden="true"] .catalog-toolbar[data-stuck="true"] {
+    transform: translateY(-64px);
+    transition: transform 250ms var(--ease-in);
+  }
+}
+
+/* 상태 선택: 같은 너비의 칸 위로 표시가 미끄러진다 */
+.segment-indicator {
+  transform: translateX(calc(var(--index, 0) * 100%));
+  transition: transform 250ms var(--ease-emphasized);
+}
+
+/* ============================================
+   SCROLL REVEAL
+   ============================================ */
+
+html.js .reveal:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.reveal {
+  transition:
+    opacity 500ms var(--ease-out) var(--reveal-delay, 0ms),
+    transform 500ms var(--ease-out) var(--reveal-delay, 0ms);
+}
+
+/* ============================================
+   SHOE CARD
+   ============================================ */
+
+.shoe-card {
+  --mx: -400px;
+  --my: -400px;
+}
+
+html[data-vt="filter"] .shoe-card {
+  view-transition-name: var(--vt-name);
+}
+
+.shoe-card-inner {
+  transition:
+    transform 300ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    background-color 200ms var(--ease-out);
+}
+
+/* 커서를 따라가는 빛: 위치는 transform으로만 바꾼다 */
+.shoe-card-inner::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -180px;
+  left: -180px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(212 250 60 / 0.11), transparent 62%);
+  transform: translate(var(--mx), var(--my));
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+  pointer-events: none;
+}
+
+.shoe-media-fg {
+  transition:
+    opacity 400ms var(--ease-out),
+    transform 400ms var(--ease-out);
+}
+
+.shoe-media-ambient {
+  transition: opacity 400ms var(--ease-out);
+}
+
+.shoe-card-arrow {
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shoe-card:hover .shoe-card-inner {
+    transform: translateY(-4px);
+    border-color: var(--color-line-strong);
+    background-color: var(--color-raised);
+  }
+
+  .shoe-card:hover .shoe-card-inner::before {
+    opacity: 1;
+  }
+
+  .shoe-card:hover .shoe-media-fg[data-loaded="true"] {
+    transform: scale(1.045);
+  }
+
+  .shoe-card:hover .shoe-card-arrow {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.shoe-card:active .shoe-card-inner {
+  transform: scale(0.985);
+  transition-duration: 120ms;
+}
+
+.shoe-card:has(:focus-visible) .shoe-card-inner {
+  outline: 2px solid var(--color-volt);
+  outline-offset: 2px;
+}
+
+.shoe-card[data-lifted="true"] .shoe-media {
+  opacity: 0;
+}
+
+.bar-fill {
+  transform-origin: left;
+  transform: scaleX(var(--ratio, 0));
+  transition: transform 800ms var(--ease-emphasized) calc(var(--reveal-delay, 0ms) + 150ms);
+}
+
+html.js .reveal:not([data-revealed]) .bar-fill {
+  transform: scaleX(0);
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-raised);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.05), transparent);
+  animation: shimmer 1.6s var(--ease-in-out) infinite;
+}
+
+/* ============================================
+   CHECKBOX
+   ============================================ */
+
+.check-path {
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  transition: stroke-dashoffset 150ms var(--ease-in-out);
+}
+
+.peer:checked + .check-box .check-path {
+  stroke-dashoffset: 0;
+  transition-duration: 200ms;
+}
+
+/* ============================================
+   OVERLAYS: 팝업, 바텀시트, 서랍, 메뉴
+   ============================================ */
+
+.overlay-in {
+  animation: fade-in 200ms var(--ease-out) both;
+}
+
+.overlay-out {
+  animation: fade-out 150ms var(--ease-in) both;
+}
+
+.popup-in {
+  animation: pop-in 200ms var(--ease-out) both;
+}
+
+.popup-out {
+  animation: pop-out 150ms var(--ease-in) both;
+}
+
+.menu-in {
+  transform-origin: top right;
+  animation: menu-in 150ms var(--ease-out) both;
+}
+
+.panel-in {
+  animation: sheet-in 300ms var(--ease-out) both;
+}
+
+.panel-out {
+  animation: sheet-out 250ms var(--ease-in) both;
+}
+
+@media (min-width: 1024px) {
+  .panel-in {
+    animation-name: drawer-in;
+  }
+
+  .panel-out {
+    animation-name: drawer-out;
+  }
+}
+
+.nav-from-left {
+  animation: slide-from-left 250ms var(--ease-out) both;
+}
+
+.nav-from-right {
+  animation: slide-from-right 250ms var(--ease-out) both;
+}
+
+/* 상세 패널의 남은 기간 막대와 오늘 표시 */
+.timeline-fill {
+  transform-origin: right;
+  transform: scaleX(var(--p, 0));
+  animation: bar-in 700ms var(--ease-emphasized) 150ms both;
+}
+
+.timeline-marker {
+  transform: translateX(calc(var(--p, 0) * 100%));
+  animation: marker-in 700ms var(--ease-emphasized) 150ms both;
+}
+
+@keyframes marker-in {
+  from {
+    transform: translateX(0);
+  }
+}
+
+/* 스크롤 진행 링 */
+.progress-ring {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+@supports (animation-timeline: scroll()) {
+  .progress-ring {
+    animation: ring-fill linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes ring-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ============================================
+   VIEW TRANSITIONS
+   ============================================ */
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 350ms;
+  animation-timing-function: var(--ease-emphasized);
+}
+
+::view-transition-old(shoe-media),
+::view-transition-new(shoe-media) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 열 때: 페이지는 바로 바뀌고 패널은 자체 애니메이션으로 들어온다 */
+html[data-vt="open"]::view-transition-old(root),
+html[data-vt="open"]::view-transition-new(root) {
+  animation: none;
+}
+
+html[data-vt="open"]::view-transition-group(shoe-media) {
+  animation-duration: 450ms;
+  animation-timing-function: var(--ease-emphasized);
+}
+
+html[data-vt="open"] .detail-panel {
+  animation-name: fade-in;
+}
+
+/* 닫을 때: 패널은 더 짧게 사라지고 사진은 카드 자리로 돌아간다 */
+html[data-vt="close"]::view-transition-old(root) {
+  animation: fade-out 160ms var(--ease-in) both;
+}
+
+html[data-vt="close"]::view-transition-new(root) {
+  animation: none;
+}
+
+html[data-vt="close"]::view-transition-group(shoe-media) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-emphasized);
+}
+
+html[data-vt="filter"]::view-transition-old(root),
+html[data-vt="filter"]::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+
+/* ============================================
+   REDUCED MOTION: 이동과 크기 변화를 빼고 짧은 Fade만 남긴다
    ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  html {
+    scroll-behavior: auto;
+  }
+
+  .anim-rise,
+  .wall-enter,
+  .popup-in,
+  .menu-in,
+  .panel-in,
+  .nav-from-left,
+  .nav-from-right {
+    animation: fade-in 150ms linear both;
+  }
+
+  .popup-out,
+  .panel-out {
+    animation: fade-out 120ms linear both;
+  }
+
+  .wall-track,
+  .live-dot::after,
+  .skeleton::after,
+  .hero-scroll-copy,
+  .hero-scroll-wall {
+    animation: none;
+  }
+
+  html.js .reveal:not([data-revealed]) {
+    transform: none;
+  }
+
+  .reveal {
+    transition: opacity 150ms linear;
+  }
+
+  .bar-fill,
+  .timeline-fill,
+  .timeline-marker {
+    transition: none;
+    animation: none;
+  }
+
+  html.js .reveal:not([data-revealed]) .bar-fill {
+    transform: scaleX(var(--ratio, 0));
+  }
+
+  .shoe-card-inner,
+  .shoe-media-fg,
+  .segment-indicator,
+  .site-header,
+  .catalog-toolbar {
+    transition-property: opacity, border-color, background-color;
+  }
+
+  .shoe-card:hover .shoe-media-fg[data-loaded="true"],
+  .shoe-card:hover .shoe-card-inner,
+  .shoe-card:active .shoe-card-inner {
+    transform: none;
   }
 }
